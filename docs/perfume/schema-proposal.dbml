@@ -1,0 +1,384 @@
+// Review diagram only. NOT a migration. No database has been created or changed.
+// Blue = proposed foundation; orange = conditional; grey = Supabase-managed reference.
+// See db.md and db-open-questions.md before implementation.
+Project perfume_poc {
+  database_type: 'PostgreSQL'
+  Note: 'Single-store POC; TH/EN; sandbox payments. Provisional Guest+Member, THB, domestic shipping, manual availability. No real formula, ratio, provider or lifecycle has been approved. Orange tables are optional, not an implementation checklist.'
+}
+
+Table auth.users [headercolor: #64748B] {
+  id uuid [pk]
+  Note: 'EXTERNAL: minimal reference to the Supabase-managed auth table. Do not create, replace, export or migrate this table. Passwords and OAuth belong to Supabase Auth.'
+}
+
+Table public.customers [headercolor: #2563EB] {
+  id uuid [pk]
+  auth_user_id uuid [unique, ref: - auth.users.id]
+  display_name text
+  email text
+  phone text
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  Note: 'Member 3. Guest rows have no auth link; link only after identity verification. Email is not unique and is never authorization. No raw birthdate. Deduplication and deletion policy pending.'
+}
+
+Table private.staff_members [headercolor: #2563EB] {
+  user_id uuid [pk, ref: - auth.users.id]
+  role text [not null, note: 'Role names and permission matrix pending; never use user-editable metadata.']
+  is_active boolean [not null, default: false]
+  created_at timestamptz [not null]
+  Note: 'Member 3. Trusted admin authorization data; not exposed through the public Data API. Admin bootstrap, revocation and last-admin protection need approved operations.'
+}
+
+Table public.products [headercolor: #2563EB] {
+  id uuid [pk]
+  slug text [not null, unique]
+  is_published boolean [not null, default: false]
+  archived_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  Note: 'Member 1. Product identity. Archive instead of deleting rows referenced by orders. Whether custom sells via a base product/variant is pending.'
+}
+
+Table public.product_translations [headercolor: #2563EB] {
+  product_id uuid [not null, ref: > public.products.id]
+  locale text [not null]
+  name text [not null]
+  description text [not null]
+  notes_description text
+  indexes { (product_id, locale) [pk] }
+  Note: 'Member 1. TH/EN product content; separate from static UI messages. Locale/fallback/publication requirements pending.'
+}
+
+Table public.product_variants [headercolor: #2563EB] {
+  id uuid [pk]
+  product_id uuid [not null, ref: > public.products.id]
+  sku text [not null, unique]
+  size_ml numeric(12,3)
+  concentration text
+  unit_price_minor bigint [not null, note: 'Integer minor units; nonnegative constraint required.']
+  currency text [not null, default: 'THB']
+  is_available boolean [not null, default: false]
+  archived_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  indexes { product_id }
+  Note: 'Member 1. Sellable size/SKU. Manual availability only; no stock count implied. Variant dimensions and custom sizing need client approval.'
+}
+
+Table public.categories [headercolor: #2563EB] {
+  id uuid [pk]
+  category_kind text [not null]
+  slug text [not null]
+  sort_order integer [not null, default: 0]
+  is_enabled boolean [not null, default: false]
+  indexes { (category_kind, slug) [unique] }
+  Note: 'Member 1. Proposed grouping for fragrance family, audience and collection. Taxonomy and per-product cardinality pending.'
+}
+
+Table public.category_translations [headercolor: #2563EB] {
+  category_id uuid [not null, ref: > public.categories.id]
+  locale text [not null]
+  name text [not null]
+  indexes { (category_id, locale) [pk] }
+}
+
+Table public.product_categories [headercolor: #2563EB] {
+  product_id uuid [not null, ref: > public.products.id]
+  category_id uuid [not null, ref: > public.categories.id]
+  indexes {
+    (product_id, category_id) [pk]
+    category_id
+  }
+}
+
+Table public.product_images [headercolor: #2563EB] {
+  id uuid [pk]
+  product_id uuid [not null, ref: > public.products.id]
+  bucket_name text [not null]
+  object_path text [not null]
+  alt_text jsonb [not null, note: 'Validated localized alt-text map, not arbitrary HTML.']
+  sort_order integer [not null, default: 0]
+  indexes { product_id }
+  Note: 'Member 1. Storage reference only; no file binaries. Upload limits, bucket access and asset reuse pending.'
+}
+
+Table public.custom_options [headercolor: #2563EB] {
+  id uuid [pk]
+  code text [not null, unique]
+  option_group text [note: 'Top/Middle/Base only if the shop confirms this meaning.']
+  is_enabled boolean [not null, default: false]
+  sort_order integer [not null, default: 0]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  Note: 'Member 3. Customer-selectable scent option; not necessarily a physical ingredient. No public ratios, formulas or invented selection limits.'
+}
+
+Table public.custom_option_translations [headercolor: #2563EB] {
+  custom_option_id uuid [not null, ref: > public.custom_options.id]
+  locale text [not null]
+  name text [not null]
+  description text
+  indexes { (custom_option_id, locale) [pk] }
+}
+
+Table public.orders [headercolor: #2563EB] {
+  id uuid [pk]
+  order_number text [not null, unique, note: 'Human reference, never an access credential.']
+  customer_id uuid [not null, ref: > public.customers.id]
+  checkout_request_key text [not null, unique]
+  locale text [not null]
+  currency text [not null, default: 'THB']
+  status text [not null, note: 'Allowed states, transitions and cancellation gates pending.']
+  subtotal_minor bigint [not null]
+  discount_minor bigint [not null, default: 0]
+  shipping_minor bigint [not null, default: 0]
+  tax_minor bigint [not null, default: 0]
+  total_minor bigint [not null]
+  snapshot_version integer [not null, default: 1]
+  buyer_snapshot jsonb [not null, note: 'Validated name/contact at purchase; immutable after placement.']
+  shipping_snapshot jsonb [not null, note: 'Validated delivery address/service/fee at purchase; not a live profile link.']
+  placed_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  indexes {
+    customer_id
+    (status, placed_at)
+    placed_at
+  }
+  Note: 'Member 4. Trusted server totals. Proposed total = subtotal - discount + shipping + tax with nonnegative bounds. Tax-inclusive rules may change this. Payment truth comes from verified attempts, not an editable duplicate paid flag.'
+}
+
+Table public.order_items [headercolor: #2563EB] {
+  id uuid [pk]
+  order_id uuid [not null, ref: > public.orders.id]
+  variant_id uuid [ref: > public.product_variants.id]
+  item_kind text [not null, note: 'Proposed standard/custom; constraints await approved product model.']
+  quantity integer [not null]
+  unit_price_minor bigint [not null]
+  line_subtotal_minor bigint [not null]
+  snapshot_version integer [not null, default: 1]
+  product_snapshot jsonb [not null, note: 'Purchase-time name, SKU, size and public custom choices; no private recipe.']
+  rule_version_snapshot text
+  recommendation_snapshot jsonb [note: 'Optional approved public result; no raw DOB. No result shape invented.']
+  indexes {
+    order_id
+    variant_id
+  }
+  Note: 'Member 4 consumes catalog/custom contracts. Standard needs variant; custom may not until the shop defines sellable identity. Quantity > 0; money >= 0; line subtotal = quantity x unit price. Do not assume nullable variant is valid for every kind.'
+}
+
+Table public.order_item_custom_options [headercolor: #2563EB] {
+  order_item_id uuid [not null, ref: > public.order_items.id]
+  custom_option_id uuid [not null, ref: > public.custom_options.id]
+  option_snapshot jsonb [not null, note: 'Purchase-time code/name/group only; no ratio.']
+  indexes {
+    (order_item_id, custom_option_id) [pk]
+    custom_option_id
+  }
+  Note: 'Member 3 selection contract; Member 4 persists with order. Only custom items may have selections. Selection limits/compatibility must be validated in the same order transaction.'
+}
+
+Table public.order_status_history [headercolor: #2563EB] {
+  id uuid [pk]
+  order_id uuid [not null, ref: > public.orders.id]
+  actor_user_id uuid [ref: > auth.users.id]
+  actor_kind text [not null, note: 'Approved staff/customer/system provenance; not client-supplied authority.']
+  from_status text
+  to_status text [not null]
+  reason text
+  created_at timestamptz [not null]
+  indexes {
+    (order_id, created_at)
+    actor_user_id
+  }
+  Note: 'Member 4. Append-only authorized transition history. Customer-safe projection must omit internal notes. Update order and append history atomically.'
+}
+
+Table public.payments [headercolor: #2563EB] {
+  id uuid [pk]
+  order_id uuid [not null, ref: > public.orders.id]
+  provider text [not null, note: 'Provider not chosen.']
+  environment text [not null, default: 'sandbox']
+  request_key text [not null, unique]
+  provider_payment_id text
+  amount_minor bigint [not null]
+  currency text [not null, default: 'THB']
+  status text [not null, note: 'Normalized attempt lifecycle pending provider and business approval.']
+  verified_at timestamptz
+  paid_at timestamptz
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  indexes {
+    order_id
+    (provider, environment, provider_payment_id) [unique]
+  }
+  Note: 'Member 4. One order has multiple attempts. Signature, merchant, order, amount, currency and environment verification required. No card data. Exactly-once fulfillment must survive distinct duplicate success events.'
+}
+
+Table private.payment_events [headercolor: #2563EB] {
+  id uuid [pk]
+  payment_id uuid [ref: > public.payments.id]
+  provider text [not null]
+  environment text [not null, default: 'sandbox']
+  provider_event_id text [not null]
+  event_type text [not null]
+  event_summary jsonb [note: 'Minimal sanitized operational fields; no raw provider payload by default.']
+  processing_status text [not null]
+  received_at timestamptz [not null]
+  processed_at timestamptz
+  indexes {
+    (provider, environment, provider_event_id) [unique]
+    payment_id
+  }
+  Note: 'Member 4. Verified inbound events only. Nullable match handles arrival before reconciliation. Retry failed processing without repeating a charge or fulfillment. Event deduplication alone is insufficient for paid transitions.'
+}
+
+Table public.promotions [headercolor: #2563EB] {
+  id uuid [pk]
+  name text [not null]
+  code text [unique, note: 'Nullable if not a code promotion; normalized code uniqueness required.']
+  discount_kind text [not null, note: 'ONE approved kind initially; not a generic rule engine.']
+  discount_value bigint [not null, note: 'Unit depends on chosen kind: minor units or basis points.']
+  starts_at timestamptz
+  ends_at timestamptz
+  is_active boolean [not null, default: false]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  Note: 'Member 1. Eligibility, stacking, expiry, rounding and usage limits pending. Do not interpret discount value until the selected kind is approved.'
+}
+
+Table public.order_promotions [headercolor: #2563EB] {
+  order_id uuid [not null, ref: > public.orders.id]
+  promotion_id uuid [not null, ref: > public.promotions.id]
+  discount_minor bigint [not null]
+  promotion_snapshot jsonb [not null]
+  indexes {
+    (order_id, promotion_id) [pk]
+    promotion_id
+  }
+  Note: 'Member 1 defines; Member 4 commits purchase snapshot. Baseline permits only one applied promotion per order via UNIQUE(order_id) in approved migration; stacking would remove that restriction. Archive referenced promotions.'
+}
+
+Table public.content_entries [headercolor: #2563EB] {
+  id uuid [pk]
+  content_key text [not null]
+  locale text [not null]
+  schema_version integer [not null, default: 1]
+  content jsonb [not null, note: 'Validated per key: landing, contact, policy, collection sections.']
+  is_published boolean [not null, default: false]
+  published_at timestamptz
+  updated_by uuid [ref: > auth.users.id]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  indexes {
+    (content_key, locale) [unique]
+    updated_by
+  }
+  Note: 'Member 2. One content entry per key+language. No separate draft on the same published row; revision/draft workflow is pending. Public access sees published content only.'
+}
+
+// CONDITIONAL extensions shown only so the team can see their connection points.
+Table public.customer_addresses [headercolor: #F59E0B] {
+  id uuid [pk]
+  customer_id uuid [not null, ref: > public.customers.id]
+  label text
+  address jsonb [not null]
+  schema_version integer [not null, default: 1]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  indexes { customer_id }
+  Note: 'CONDITIONAL Q-A03. Member 3. Saved member addresses only if requested; checkout copies the chosen address into order.shipping_snapshot. Editing this row never edits an old order.'
+}
+
+Table public.wishlist_items [headercolor: #F59E0B] {
+  customer_id uuid [not null, ref: > public.customers.id]
+  product_id uuid [not null, ref: > public.products.id]
+  created_at timestamptz [not null]
+  indexes {
+    (customer_id, product_id) [pk]
+    product_id
+  }
+  Note: 'CONDITIONAL Q-A04. Member 2. Proposed product-level member wishlist. Guest persistence, variant-level favorites and merge rules pending.'
+}
+
+Table private.production_recipes [headercolor: #F59E0B] {
+  id uuid [pk]
+  order_item_id uuid [not null, unique, ref: - public.order_items.id]
+  revision integer [not null]
+  recipe_definition jsonb [not null, note: 'Private shop-approved ratios/units/formula. Shape unresolved, not a physical ingredient inventory.']
+  prepared_by uuid [ref: > auth.users.id]
+  created_at timestamptz [not null]
+  updated_at timestamptz [not null]
+  indexes { prepared_by }
+  Note: 'CONDITIONAL Q-C05. Member 3. One current recipe per custom item; version history/approval requires a different model if requested. Never expose this schema or formula to storefront. No invented ratios.'
+}
+
+Table public.shipments [headercolor: #F59E0B] {
+  id uuid [pk]
+  order_id uuid [not null, unique, ref: - public.orders.id]
+  carrier text
+  tracking_number text
+  status text [not null]
+  shipped_at timestamptz
+  delivered_at timestamptz
+  updated_at timestamptz [not null]
+  Note: 'CONDITIONAL Q-O03. Member 4. Proposed one parcel per order and manual tracking. Split shipments require order-item allocation and removal of unique order_id.'
+}
+
+Table private.refunds [headercolor: #F59E0B] {
+  id uuid [pk]
+  payment_id uuid [not null, ref: > public.payments.id]
+  request_key text [not null, unique]
+  provider_refund_id text
+  amount_minor bigint [not null]
+  currency text [not null]
+  status text [not null]
+  reason text
+  requested_by uuid [ref: > auth.users.id]
+  requested_at timestamptz [not null]
+  verified_at timestamptz
+  indexes {
+    payment_id
+    requested_by
+  }
+  Note: 'CONDITIONAL Q-O05. Member 4. Whole-order refund initially if approved; total confirmed refunds cannot exceed verified paid amount. Provider refund identity must be deduplicated with provider/environment context; never inferred from order cancellation.'
+}
+
+TableGroup catalog {
+  public.products
+  public.product_translations
+  public.product_variants
+  public.categories
+  public.category_translations
+  public.product_categories
+  public.product_images
+}
+TableGroup identity {
+  auth.users
+  public.customers
+  private.staff_members
+}
+TableGroup custom_selection {
+  public.custom_options
+  public.custom_option_translations
+  public.order_item_custom_options
+}
+TableGroup commerce {
+  public.orders
+  public.order_items
+  public.order_status_history
+  public.payments
+  private.payment_events
+}
+TableGroup promotion_and_content {
+  public.promotions
+  public.order_promotions
+  public.content_entries
+}
+TableGroup conditional_extensions {
+  public.customer_addresses
+  public.wishlist_items
+  private.production_recipes
+  public.shipments
+  private.refunds
+}

@@ -1,0 +1,266 @@
+erDiagram
+    direction LR
+    authUsers["auth.users"] {
+        uuid id PK "NOT NULL"
+    }
+    publicCustomers["public.customers"] {
+        uuid id PK "NOT NULL"
+        uuid auth_user_id FK, UK "nullable"
+        text display_name "nullable"
+        text email "nullable"
+        text phone "nullable"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicProducts["public.products"] {
+        uuid id PK "NOT NULL"
+        text slug UK "NOT NULL"
+        boolean is_published "NOT NULL"
+        timestamptz archived_at "nullable"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicProductTranslations["public.product_translations"] {
+        uuid product_id PK, FK "NOT NULL"
+        text locale PK "NOT NULL"
+        text name "NOT NULL"
+        text description "NOT NULL"
+        text notes_description "nullable"
+    }
+    publicProductVariants["public.product_variants"] {
+        uuid id PK "NOT NULL"
+        uuid product_id FK "NOT NULL"
+        text sku UK "NOT NULL"
+        numeric size_ml "numeric(12,3); nullable"
+        text concentration "nullable"
+        bigint unit_price_minor "NOT NULL"
+        text currency "NOT NULL"
+        boolean is_available "NOT NULL"
+        timestamptz archived_at "nullable"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicCategories["public.categories"] {
+        uuid id PK "NOT NULL"
+        text category_kind "NOT NULL"
+        text slug "NOT NULL"
+        integer sort_order "NOT NULL"
+        boolean is_enabled "NOT NULL"
+    }
+    publicCategoryTranslations["public.category_translations"] {
+        uuid category_id PK, FK "NOT NULL"
+        text locale PK "NOT NULL"
+        text name "NOT NULL"
+    }
+    publicProductCategories["public.product_categories"] {
+        uuid product_id PK, FK "NOT NULL"
+        uuid category_id PK, FK "NOT NULL"
+    }
+    publicProductImages["public.product_images"] {
+        uuid id PK "NOT NULL"
+        uuid product_id FK "NOT NULL"
+        text bucket_name "NOT NULL"
+        text object_path "NOT NULL"
+        jsonb alt_text "NOT NULL"
+        integer sort_order "NOT NULL"
+    }
+    publicCustomOptions["public.custom_options"] {
+        uuid id PK "NOT NULL"
+        text code UK "NOT NULL"
+        text option_group "nullable"
+        boolean is_enabled "NOT NULL"
+        integer sort_order "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicCustomOptionTranslations["public.custom_option_translations"] {
+        uuid custom_option_id PK, FK "NOT NULL"
+        text locale PK "NOT NULL"
+        text name "NOT NULL"
+        text description "nullable"
+    }
+    publicOrders["public.orders"] {
+        uuid id PK "NOT NULL"
+        text order_number UK "NOT NULL"
+        uuid customer_id FK "NOT NULL"
+        text checkout_request_key UK "NOT NULL"
+        text locale "NOT NULL"
+        text currency "NOT NULL"
+        text status "NOT NULL"
+        bigint subtotal_minor "NOT NULL"
+        bigint discount_minor "NOT NULL"
+        bigint shipping_minor "NOT NULL"
+        bigint tax_minor "NOT NULL"
+        bigint total_minor "NOT NULL"
+        integer snapshot_version "NOT NULL"
+        jsonb buyer_snapshot "NOT NULL"
+        jsonb shipping_snapshot "NOT NULL"
+        timestamptz placed_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicOrderItems["public.order_items"] {
+        uuid id PK "NOT NULL"
+        uuid order_id FK "NOT NULL"
+        uuid variant_id FK "nullable"
+        text item_kind "NOT NULL"
+        integer quantity "NOT NULL"
+        bigint unit_price_minor "NOT NULL"
+        bigint line_subtotal_minor "NOT NULL"
+        integer snapshot_version "NOT NULL"
+        jsonb product_snapshot "NOT NULL"
+        text rule_version_snapshot "nullable"
+        jsonb recommendation_snapshot "nullable"
+    }
+    publicOrderItemCustomOptions["public.order_item_custom_options"] {
+        uuid order_item_id PK, FK "NOT NULL"
+        uuid custom_option_id PK, FK "NOT NULL"
+        jsonb option_snapshot "NOT NULL"
+    }
+    publicOrderStatusHistory["public.order_status_history"] {
+        uuid id PK "NOT NULL"
+        uuid order_id FK "NOT NULL"
+        uuid actor_user_id FK "nullable"
+        text actor_kind "NOT NULL"
+        text from_status "nullable"
+        text to_status "NOT NULL"
+        text reason "nullable"
+        timestamptz created_at "NOT NULL"
+    }
+    publicPayments["public.payments"] {
+        uuid id PK "NOT NULL"
+        uuid order_id FK "NOT NULL"
+        text provider "NOT NULL"
+        text environment "NOT NULL"
+        text request_key UK "NOT NULL"
+        text provider_payment_id "nullable"
+        bigint amount_minor "NOT NULL"
+        text currency "NOT NULL"
+        text status "NOT NULL"
+        timestamptz verified_at "nullable"
+        timestamptz paid_at "nullable"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicPromotions["public.promotions"] {
+        uuid id PK "NOT NULL"
+        text name "NOT NULL"
+        text code UK "nullable"
+        text discount_kind "NOT NULL"
+        bigint discount_value "NOT NULL"
+        timestamptz starts_at "nullable"
+        timestamptz ends_at "nullable"
+        boolean is_active "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicOrderPromotions["public.order_promotions"] {
+        uuid order_id PK, FK "NOT NULL"
+        uuid promotion_id PK, FK "NOT NULL"
+        bigint discount_minor "NOT NULL"
+        jsonb promotion_snapshot "NOT NULL"
+    }
+    publicContentEntries["public.content_entries"] {
+        uuid id PK "NOT NULL"
+        text content_key "NOT NULL"
+        text locale "NOT NULL"
+        integer schema_version "NOT NULL"
+        jsonb content "NOT NULL"
+        boolean is_published "NOT NULL"
+        timestamptz published_at "nullable"
+        uuid updated_by FK "nullable"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicCustomerAddresses["public.customer_addresses"] {
+        uuid id PK "NOT NULL"
+        uuid customer_id FK "NOT NULL"
+        text label "nullable"
+        jsonb address "NOT NULL"
+        integer schema_version "NOT NULL"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    publicWishlistItems["public.wishlist_items"] {
+        uuid customer_id PK, FK "NOT NULL"
+        uuid product_id PK, FK "NOT NULL"
+        timestamptz created_at "NOT NULL"
+    }
+    publicShipments["public.shipments"] {
+        uuid id PK "NOT NULL"
+        uuid order_id FK, UK "NOT NULL"
+        text carrier "nullable"
+        text tracking_number "nullable"
+        text status "NOT NULL"
+        timestamptz shipped_at "nullable"
+        timestamptz delivered_at "nullable"
+        timestamptz updated_at "NOT NULL"
+    }
+    privateStaffMembers["private.staff_members"] {
+        uuid user_id PK, FK "NOT NULL"
+        text role "NOT NULL"
+        boolean is_active "NOT NULL"
+        timestamptz created_at "NOT NULL"
+    }
+    privatePaymentEvents["private.payment_events"] {
+        uuid id PK "NOT NULL"
+        uuid payment_id FK "nullable"
+        text provider "NOT NULL"
+        text environment "NOT NULL"
+        text provider_event_id "NOT NULL"
+        text event_type "NOT NULL"
+        jsonb event_summary "nullable"
+        text processing_status "NOT NULL"
+        timestamptz received_at "NOT NULL"
+        timestamptz processed_at "nullable"
+    }
+    privateProductionRecipes["private.production_recipes"] {
+        uuid id PK "NOT NULL"
+        uuid order_item_id FK, UK "NOT NULL"
+        integer revision "NOT NULL"
+        jsonb recipe_definition "NOT NULL"
+        uuid prepared_by FK "nullable"
+        timestamptz created_at "NOT NULL"
+        timestamptz updated_at "NOT NULL"
+    }
+    privateRefunds["private.refunds"] {
+        uuid id PK "NOT NULL"
+        uuid payment_id FK "NOT NULL"
+        text request_key UK "NOT NULL"
+        text provider_refund_id "nullable"
+        bigint amount_minor "NOT NULL"
+        text currency "NOT NULL"
+        text status "NOT NULL"
+        text reason "nullable"
+        uuid requested_by FK "nullable"
+        timestamptz requested_at "NOT NULL"
+        timestamptz verified_at "nullable"
+    }
+    authUsers |o..o| publicCustomers : "auth_user_id"
+    authUsers ||..o| privateStaffMembers : "user_id"
+    publicProducts ||..o{ publicProductTranslations : "product_id"
+    publicProducts ||..o{ publicProductVariants : "product_id"
+    publicCategories ||..o{ publicCategoryTranslations : "category_id"
+    publicProducts ||..o{ publicProductCategories : "product_id"
+    publicCategories ||..o{ publicProductCategories : "category_id"
+    publicProducts ||..o{ publicProductImages : "product_id"
+    publicCustomOptions ||..o{ publicCustomOptionTranslations : "custom_option_id"
+    publicCustomers ||..o{ publicOrders : "customer_id"
+    publicOrders ||..o{ publicOrderItems : "order_id"
+    publicProductVariants |o..o{ publicOrderItems : "variant_id"
+    publicOrderItems ||..o{ publicOrderItemCustomOptions : "order_item_id"
+    publicCustomOptions ||..o{ publicOrderItemCustomOptions : "custom_option_id"
+    publicOrders ||..o{ publicOrderStatusHistory : "order_id"
+    authUsers |o..o{ publicOrderStatusHistory : "actor_user_id"
+    publicOrders ||..o{ publicPayments : "order_id"
+    publicPayments |o..o{ privatePaymentEvents : "payment_id"
+    publicOrders ||..o{ publicOrderPromotions : "order_id"
+    publicPromotions ||..o{ publicOrderPromotions : "promotion_id"
+    authUsers |o..o{ publicContentEntries : "updated_by"
+    publicCustomers ||..o{ publicCustomerAddresses : "customer_id"
+    publicCustomers ||..o{ publicWishlistItems : "customer_id"
+    publicProducts ||..o{ publicWishlistItems : "product_id"
+    publicOrderItems ||..o| privateProductionRecipes : "order_item_id"
+    authUsers |o..o{ privateProductionRecipes : "prepared_by"
+    publicOrders ||..o| publicShipments : "order_id"
+    publicPayments ||..o{ privateRefunds : "payment_id"
+    authUsers |o..o{ privateRefunds : "requested_by"

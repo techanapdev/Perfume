@@ -15,6 +15,7 @@
 - Keep server operations and client-safe exports separate; no global domain-types file.
 - Create components/queries/actions/schemas only for approved work. No speculative services, empty source stubs or generic CRUD framework.
 - No invented birthday formulas, ratios, prices, auth policies, provider choice or schema.
+- JSX: one element per line, no multi-element one-liners. Split a page into small named section components; extract repeated field markup. Requirement comments stay at most two lines above the function, not inside JSX. Format files you touch with `pnpm format <file>`.
 - Use camelCase, PascalCase for components/types and kebab-case filenames; no any; keep source files under 300 lines.
 - Direct dependencies are pinned. Coordinate config/lockfile/i18n/shared changes with their owner.
 - Read installed node_modules/next/dist/docs before new framework work. Do not assume APIs from older Next versions.

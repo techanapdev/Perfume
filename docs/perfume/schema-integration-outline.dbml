@@ -1,0 +1,255 @@
+// Integration outline ONLY: not a complete schema or migration.
+// Visible fields = proposed shared keys, contracts and critical invariants.
+// Other required fields are intentionally left for the table owner to design.
+// Adding internal fields is allowed; changing shared identity/type/cardinality/units/access needs consumer review.
+// Blue = proposed foundation; orange = conditional; grey = managed external reference.
+// See db-integration-outline.md and db-open-questions.md.
+Project perfume_integration_outline {
+  database_type: 'PostgreSQL'
+  Note: 'User agreed to PK/FK plus essential shared fields, with internal columns designed by feature owners. Business choices remain Proposed/Pending. Same 26 tables and 29 references as the full proposal. No migrations, credentials, raw DOB, private ratios or invented provider rules.'
+}
+
+Table auth.users [headercolor: #64748B] {
+  id uuid [pk]
+  Note: 'Owner: Supabase. Consumers: Member 3 identity/access; audit actors. Shared: managed user ID only. Do not create this table or design passwords/OAuth columns.'
+}
+Table public.customers [headercolor: #2563EB] {
+  id uuid [pk]
+  auth_user_id uuid [unique, ref: - auth.users.id]
+  Note: 'Owner: Member 3. Consumers: 4 orders; 2 wishlist; 1 reporting. Shared: customer ID, nullable verified auth linkage. Owner designs: profile/contact fields and retention. Email is not an identity proof; guest linkage requires verified access.'
+}
+Table private.staff_members [headercolor: #2563EB] {
+  user_id uuid [pk, ref: - auth.users.id]
+  role text [not null, note: 'Permission vocabulary pending; used by sensitive operations across features.']
+  is_active boolean [not null, default: false]
+  Note: 'Owner: Member 3. Consumers: all authorized server operations. Shared: trusted role/active check; private unexposed access. Owner designs: provisioning/audit fields. No user-editable role metadata.'
+}
+Table public.products [headercolor: #2563EB] {
+  id uuid [pk]
+  slug text [not null, unique]
+  is_published boolean [not null, default: false]
+  Note: 'Owner: Member 1. Consumers: 2 landing/wishlist; 4 checkout via catalog contract. Shared: identity, public URL, publication gate. Owner designs: product details, archive fields and presentation. Referenced purchase history must survive catalog edits.'
+}
+Table public.product_translations [headercolor: #2563EB] {
+  product_id uuid [not null, ref: > public.products.id]
+  locale text [not null]
+  indexes { (product_id, locale) [pk] }
+  Note: 'Owner: Member 1. Consumers: localized catalog views. Shared: one row per product+locale. Owner designs: localized name, description and fragrance copy; expose an agreed display result, not direct table coupling.'
+}
+Table public.product_variants [headercolor: #2563EB] {
+  id uuid [pk]
+  product_id uuid [not null, ref: > public.products.id]
+  sku text [not null, unique]
+  unit_price_minor bigint [not null, note: 'Nonnegative integer minor units; server-authoritative.']
+  currency text [not null, note: 'Provisional THB; same unit/currency contract as orders and payments.']
+  is_available boolean [not null, default: false]
+  Note: 'Owner: Member 1. Consumer: 4 cart/checkout/order. Shared: sellable ID, SKU, price/currency and availability. Owner designs: size/concentration/variant dimensions and timestamps. No stock counts implied; publication of parent must also be checked.'
+}
+Table public.categories [headercolor: #2563EB] {
+  id uuid [pk]
+  category_kind text [not null]
+  slug text [not null]
+  is_enabled boolean [not null, default: false]
+  indexes { (category_kind, slug) [unique] }
+  Note: 'Owner: Member 1. Consumer: 2 collection/navigation via catalog contract. Shared: category identity and route/filter grouping. Owner designs: taxonomy details/sort/display; actual kinds and cardinalities pending.'
+}
+Table public.category_translations [headercolor: #2563EB] {
+  category_id uuid [not null, ref: > public.categories.id]
+  locale text [not null]
+  indexes { (category_id, locale) [pk] }
+  Note: 'Owner: Member 1. Consumer: localized category displays. Shared: category+locale key. Owner designs: label and description fields.'
+}
+Table public.product_categories [headercolor: #2563EB] {
+  product_id uuid [not null, ref: > public.products.id]
+  category_id uuid [not null, ref: > public.categories.id]
+  indexes { (product_id, category_id) [pk] }
+  Note: 'Owner: Member 1. Consumer: catalog filtering and collections. Shared: nonduplicate product-category link. Owner designs: metadata only if needed; restrictions on category membership pending.'
+}
+Table public.product_images [headercolor: #2563EB] {
+  id uuid [pk]
+  product_id uuid [not null, ref: > public.products.id]
+  Note: 'Owner: Member 1. Consumer: 2 through catalog display result. Shared: image-product relationship. Owner designs: Storage path/bucket, alt text, ordering, upload/access limits; no binary files in this table.'
+}
+Table public.custom_options [headercolor: #2563EB] {
+  id uuid [pk]
+  code text [not null, unique]
+  is_enabled boolean [not null, default: false]
+  Note: 'Owner: Member 3. Consumer: 4 custom cart/order selections. Shared: option identity, stable code, eligibility gate. Owner designs: group/display fields and approved constraints. A selectable option is not automatically a physical ingredient; no public ratios.'
+}
+Table public.custom_option_translations [headercolor: #2563EB] {
+  custom_option_id uuid [not null, ref: > public.custom_options.id]
+  locale text [not null]
+  indexes { (custom_option_id, locale) [pk] }
+  Note: 'Owner: Member 3. Consumers: custom wizard/order summaries. Shared: option+locale key. Owner designs: localized names/descriptions and safe recommendation copy.'
+}
+Table public.orders [headercolor: #2563EB] {
+  id uuid [pk]
+  customer_id uuid [not null, ref: > public.customers.id]
+  order_number text [not null, unique]
+  checkout_request_key text [not null, unique]
+  status text [not null, note: 'Allowed states/transitions pending; server-authoritative.']
+  total_minor bigint [not null]
+  currency text [not null]
+  placed_at timestamptz [not null]
+  snapshot_version integer [not null]
+  buyer_snapshot jsonb [not null, note: 'Purchase-time safe contact data; validate structure before implementation.']
+  shipping_snapshot jsonb [not null, note: 'Purchase-time delivery choice/address; not a live saved-address reference.']
+  Note: 'Owner: Member 4. Consumers: 3 account/customer history; 1 reporting. Shared: Order identity/ownership, deduplication, final amount/currency, state, time and immutable commercial snapshots. Owner designs: subtotal/tax/shipping/discount breakdown, timestamps and approved lifecycle. Order number is not an access secret; no editable duplicate paid flag.'
+}
+Table public.order_items [headercolor: #2563EB] {
+  id uuid [pk]
+  order_id uuid [not null, ref: > public.orders.id]
+  variant_id uuid [ref: > public.product_variants.id]
+  item_kind text [not null]
+  quantity integer [not null, note: 'Positive integer sellable units, not ingredient volume.']
+  unit_price_minor bigint [not null]
+  snapshot_version integer [not null]
+  product_snapshot jsonb [not null, note: 'Purchase-time label/SKU/size and safe configuration; shape needs producer/consumer agreement.']
+  rule_version_snapshot text
+  Note: 'Owner: Member 4. Partners: 1 catalog, 3 custom. Shared: Order-item identity, optional variant link, kind/quantity/price, immutable purchase summary and custom rule identifier when used. Owner designs: line totals/details/approved recommendation evidence. Standard requires Variant; custom identity and pricing are pending. No raw DOB/private recipe in public snapshots.'
+}
+Table public.order_item_custom_options [headercolor: #2563EB] {
+  order_item_id uuid [not null, ref: > public.order_items.id]
+  custom_option_id uuid [not null, ref: > public.custom_options.id]
+  option_snapshot jsonb [not null]
+  indexes { (order_item_id, custom_option_id) [pk] }
+  Note: 'Owner: Member 4 writes with Order transaction. Partner: Member 3 defines selection contract. Shared: unique item-option link and purchase-time public option summary. Owner designs: approved selection metadata together with Member 3. Only custom items; limits/compatibility must be server-validated; no ratios.'
+}
+Table public.order_status_history [headercolor: #2563EB] {
+  id uuid [pk]
+  order_id uuid [not null, ref: > public.orders.id]
+  actor_user_id uuid [ref: > auth.users.id]
+  actor_kind text [not null]
+  to_status text [not null]
+  created_at timestamptz [not null]
+  Note: 'Owner: Member 4. Consumers: tracking/account/reporting and authorized audit. Shared: order, trusted actor/system provenance, state and time. Owner designs: from-state, reason and audit details. Append-only; omit private reasons from customer projection.'
+}
+Table public.payments [headercolor: #2563EB] {
+  id uuid [pk]
+  order_id uuid [not null, ref: > public.orders.id]
+  request_key text [not null, unique]
+  provider text [not null]
+  environment text [not null]
+  provider_payment_id text
+  amount_minor bigint [not null]
+  currency text [not null]
+  status text [not null]
+  verified_at timestamptz
+  paid_at timestamptz
+  indexes { (provider, environment, provider_payment_id) [unique] }
+  Note: 'Owner: Member 4. Consumers: order result; 1 reporting through safe read contract. Shared: attempt identity/deduplication, Order, provider/environment, amount/currency and verified payment fact/time. Owner designs: provider-specific metadata/lifecycle/reconciliation. No card data; order may have multiple attempts; no fulfillment from redirect success.'
+}
+Table private.payment_events [headercolor: #2563EB] {
+  id uuid [pk]
+  payment_id uuid [ref: > public.payments.id]
+  provider text [not null]
+  environment text [not null]
+  provider_event_id text [not null]
+  processing_status text [not null]
+  indexes { (provider, environment, provider_event_id) [unique] }
+  Note: 'Owner: Member 4. Consumers: internal payment reconciliation only. Shared: provider event deduplication/matching and processing state. Owner designs: sanitized event summary/timestamps/retry data. Private; verified events only. Nullable match permits early arrival; distinct duplicate successes must still fulfill once.'
+}
+Table public.promotions [headercolor: #2563EB] {
+  id uuid [pk]
+  code text [unique]
+  discount_kind text [not null]
+  discount_value bigint [not null]
+  is_active boolean [not null, default: false]
+  Note: 'Owner: Member 1. Consumer: 4 final quote via trusted promotion operation. Shared: promotion identity, code, approved discount units/kind and eligibility result. Owner designs: dates, display, scope/limits/rounding after client approval; kind/value alone are not complete eligibility rules.'
+}
+Table public.order_promotions [headercolor: #2563EB] {
+  order_id uuid [not null, ref: > public.orders.id]
+  promotion_id uuid [not null, ref: > public.promotions.id]
+  discount_minor bigint [not null]
+  promotion_snapshot jsonb [not null]
+  indexes {
+    (order_id, promotion_id) [pk]
+    order_id [unique]
+  }
+  Note: 'Owner: Member 4 writes atomically with Order. Partner: Member 1 defines discount contract. Shared: applied identity, discount amount and immutable calculation evidence. Owner designs: evidence shape with Member 1. Unique order_id represents provisional one-promotion policy; stacking needs explicit contract revision.'
+}
+Table public.content_entries [headercolor: #2563EB] {
+  id uuid [pk]
+  content_key text [not null]
+  locale text [not null]
+  schema_version integer [not null]
+  is_published boolean [not null, default: false]
+  updated_by uuid [ref: > auth.users.id]
+  indexes { (content_key, locale) [unique] }
+  Note: 'Owner: Member 2. Consumers: public pages and authorized content editor. Shared: localized entry identity, version/publication and trusted editor reference. Owner designs: content columns or validated per-key body and timestamps. Do not expose private drafts; draft/live revision workflow pending.'
+}
+
+// CONDITIONAL: show connection points only, not work to start automatically.
+Table public.customer_addresses [headercolor: #F59E0B] {
+  id uuid [pk]
+  customer_id uuid [not null, ref: > public.customers.id]
+  Note: 'CONDITIONAL. Owner: Member 3. Consumer: 4 checkout safe address selection. Shared: address identity/ownership; copy approved content into Order snapshot. Owner designs: address fields/labels/version after confirmation; edits must not change old Orders.'
+}
+Table public.wishlist_items [headercolor: #F59E0B] {
+  customer_id uuid [not null, ref: > public.customers.id]
+  product_id uuid [not null, ref: > public.products.id]
+  indexes { (customer_id, product_id) [pk] }
+  Note: 'CONDITIONAL. Owner: Member 2. Partners: 3 verified customer; 1 catalog. Shared: one product favorite per customer. Owner designs: timestamps/metadata after scope approval; guest persistence/variant favorites may change identity contract.'
+}
+Table private.production_recipes [headercolor: #F59E0B] {
+  id uuid [pk]
+  order_item_id uuid [not null, unique, ref: - public.order_items.id]
+  prepared_by uuid [ref: > auth.users.id]
+  Note: 'CONDITIONAL. Owner: Member 3. Partner: 4 authorized production lifecycle. Shared: private recipe-to-item identity and trusted actor. Owner designs: private formula/ratios/units/revision/approval only after shop confirmation. One current recipe per item is provisional; history requires cardinality/version decision. Never return recipe body to storefront.'
+}
+Table public.shipments [headercolor: #F59E0B] {
+  id uuid [pk]
+  order_id uuid [not null, unique, ref: - public.orders.id]
+  status text [not null]
+  Note: 'CONDITIONAL. Owner: Member 4. Consumers: safe Order tracking. Shared: shipment-to-order link and approved state. Owner designs: carrier/tracking/time/manual update fields. Provisional single parcel; split shipments need cardinality and item-allocation revision.'
+}
+Table private.refunds [headercolor: #F59E0B] {
+  id uuid [pk]
+  payment_id uuid [not null, ref: > public.payments.id]
+  request_key text [not null, unique]
+  amount_minor bigint [not null]
+  currency text [not null]
+  status text [not null]
+  verified_at timestamptz
+  requested_by uuid [ref: > auth.users.id]
+  Note: 'CONDITIONAL. Owner: Member 4. Consumer: 1 verified-refund reporting through safe server contract. Shared: refund identity/deduplication, verified payment relation, amount/currency and state/time. Owner designs: provider refund reference/deduplication, reason/audit after confirmation. Whole-order refund provisional; aggregate refunds cannot exceed verified paid amount.'
+}
+
+TableGroup catalog {
+  public.products
+  public.product_translations
+  public.product_variants
+  public.categories
+  public.category_translations
+  public.product_categories
+  public.product_images
+}
+TableGroup identity {
+  auth.users
+  public.customers
+  private.staff_members
+}
+TableGroup custom_selection {
+  public.custom_options
+  public.custom_option_translations
+  public.order_item_custom_options
+}
+TableGroup commerce {
+  public.orders
+  public.order_items
+  public.order_status_history
+  public.payments
+  private.payment_events
+}
+TableGroup promotion_and_content {
+  public.promotions
+  public.order_promotions
+  public.content_entries
+}
+TableGroup conditional_extensions {
+  public.customer_addresses
+  public.wishlist_items
+  private.production_recipes
+  public.shipments
+  private.refunds
+}
