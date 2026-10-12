@@ -4,7 +4,7 @@
 
 ## Core ที่ส่งให้ทีมใช้ร่วมกัน
 
-แหล่งจริงของ Core คือ [migration](../../supabase/migrations/20261011075113_core_tables.sql) และ [ADR 0004](../adr/0004-core-table-integration.md). ส่วนข้อเสนอ 26 ตารางด้านล่างเป็นแนวออกแบบ feature เท่านั้น **ห้ามถือว่าคอลัมน์ในข้อเสนอมีอยู่แล้ว**
+แหล่งจริงของ Core คือ [migration](../../supabase/migrations/20261011075836_core_tables.sql) และ [ADR 0004](../adr/0004-core-table-integration.md). ส่วนข้อเสนอ 26 ตารางด้านล่างเป็นแนวออกแบบ feature เท่านั้น **ห้ามถือว่าคอลัมน์ในข้อเสนอมีอยู่แล้ว**
 
 เป้าหมาย Core: ให้ทีมใช้ตาราง, ID และ FK ชุดเดียว ไม่สร้างตารางซ้ำหรือเชื่อมผิดชนิด. Core รอบนี้มีเฉพาะ ID/FK/เวลาสร้าง ยังไม่มีชื่อสินค้า, slug, SKU, ราคา, ยอดขาย, status, snapshots หรือ provider fields จึงยังไม่ใช่ Catalog/Checkout/Payment ที่เปิดใช้งานได้
 
@@ -74,7 +74,7 @@
 
 ### หลักฐานและสถานะ
 
-Independent agent scrutiny: **PASS / ship** สำหรับ SQL และ dictionary ก่อน apply. Apply `core_tables` สำเร็จบน PostgreSQL 17.11; remote version `20261011075836`, local CLI filename `20261011075113_core_tables.sql`. ไม่ใช้ bulk db push เพราะ timestamp history ต่างกัน
+Independent agent scrutiny: **PASS / ship** สำหรับ SQL และ dictionary ก่อน apply. Apply `core_tables` สำเร็จบน PostgreSQL 17.11; version `20261011075836`. วันที่ 12 ตุลาคม 2026 เปลี่ยนชื่อไฟล์ local ให้ตรงกับ remote หลังเทียบ SQL แล้ว โดยไม่รัน migration ซ้ำหรือแก้ประวัติ remote
 
 หลัง apply dump [schema evidence](../../.docs/core-schema-2026-10-11.json) และตรวจครบ 18 คอลัมน์, 6 PK, 6 FK แบบ RESTRICT, 1 UNIQUE Auth link, 12 indexes รวม PK/unique/FK; [SQL assertions](../../scripts/core-schema.check.sql) ผ่าน RLS/no policies/table+sequence privileges ของ anon/authenticated. Anonymous HTTP GET ทั้งหกตารางตอบ 401 + code 42501 ตาม deny-by-default; ไม่ใช่ 404/table missing
 
@@ -152,7 +152,7 @@ Independent agent scrutiny: **PASS / ship** สำหรับ SQL และ dic
 | `role`      | text    | ไม่  | บทบาท (ชุดค่าและ permission matrix Pending, Q-B01) ห้ามใช้ metadata ที่ผู้ใช้แก้ได้แทน |
 | `is_active` | boolean | ไม่  | เปิดใช้สิทธิ์หรือไม่ (default `false`)                                                 |
 
-มี migration เดิม `supabase/migrations/20261010000000_staff_auth.sql`; actual Core ดูส่วนต้นของ dictionary นี้
+มี migration เดิม `supabase/migrations/20261010151646_staff_auth.sql`; actual Core ดูส่วนต้นของ dictionary นี้
 
 ---
 
