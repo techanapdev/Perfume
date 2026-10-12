@@ -1,0 +1,360 @@
+{
+  "project_id": "mpzsrprdvvmhormesrva",
+  "local_migration": "20261011075113_core_tables",
+  "remote_migration": "20261011075836_core_tables",
+  "reviewed_sql_sha256": "182c751657fb7fa2a440bcf0176e6b3603ce860f7c0d1f4b94ad7df699eac210",
+  "rls": [
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "table": "customers",
+      "enabled": true
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "table": "order_items",
+      "enabled": true
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "table": "orders",
+      "enabled": true
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "table": "payments",
+      "enabled": true
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "table": "product_variants",
+      "enabled": true
+    },
+    {
+      "acl": [
+        "postgres=arwdDxtm/postgres",
+        "service_role=arwdDxtm/postgres"
+      ],
+      "table": "products",
+      "enabled": true
+    }
+  ],
+  "columns": [
+    {
+      "type": "uuid",
+      "table": "customers",
+      "column": "id",
+      "default": "gen_random_uuid()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "uuid",
+      "table": "customers",
+      "column": "auth_user_id",
+      "default": null,
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "customers",
+      "column": "created_at",
+      "default": "now()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "uuid",
+      "table": "order_items",
+      "column": "id",
+      "default": "gen_random_uuid()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "uuid",
+      "table": "order_items",
+      "column": "order_id",
+      "default": null,
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "bigint",
+      "table": "order_items",
+      "column": "variant_id",
+      "default": null,
+      "identity": "NO",
+      "nullable": "YES",
+      "identity_generation": null
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "order_items",
+      "column": "created_at",
+      "default": "now()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "uuid",
+      "table": "orders",
+      "column": "id",
+      "default": "gen_random_uuid()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "uuid",
+      "table": "orders",
+      "column": "customer_id",
+      "default": null,
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "orders",
+      "column": "created_at",
+      "default": "now()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "uuid",
+      "table": "payments",
+      "column": "id",
+      "default": "gen_random_uuid()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "uuid",
+      "table": "payments",
+      "column": "order_id",
+      "default": null,
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "payments",
+      "column": "created_at",
+      "default": "now()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "bigint",
+      "table": "product_variants",
+      "column": "id",
+      "default": null,
+      "identity": "YES",
+      "nullable": "NO",
+      "identity_generation": "ALWAYS"
+    },
+    {
+      "type": "bigint",
+      "table": "product_variants",
+      "column": "product_id",
+      "default": null,
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "product_variants",
+      "column": "created_at",
+      "default": "now()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    },
+    {
+      "type": "bigint",
+      "table": "products",
+      "column": "id",
+      "default": null,
+      "identity": "YES",
+      "nullable": "NO",
+      "identity_generation": "ALWAYS"
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "products",
+      "column": "created_at",
+      "default": "now()",
+      "identity": "NO",
+      "nullable": "NO",
+      "identity_generation": null
+    }
+  ],
+  "indexes": [
+    {
+      "table": "customers",
+      "definition": "CREATE UNIQUE INDEX customers_auth_user_id_key ON public.customers USING btree (auth_user_id)"
+    },
+    {
+      "table": "customers",
+      "definition": "CREATE UNIQUE INDEX customers_pkey ON public.customers USING btree (id)"
+    },
+    {
+      "table": "order_items",
+      "definition": "CREATE INDEX order_items_order_id_idx ON public.order_items USING btree (order_id)"
+    },
+    {
+      "table": "order_items",
+      "definition": "CREATE UNIQUE INDEX order_items_pkey ON public.order_items USING btree (id)"
+    },
+    {
+      "table": "order_items",
+      "definition": "CREATE INDEX order_items_variant_id_idx ON public.order_items USING btree (variant_id)"
+    },
+    {
+      "table": "orders",
+      "definition": "CREATE INDEX orders_customer_id_idx ON public.orders USING btree (customer_id)"
+    },
+    {
+      "table": "orders",
+      "definition": "CREATE UNIQUE INDEX orders_pkey ON public.orders USING btree (id)"
+    },
+    {
+      "table": "payments",
+      "definition": "CREATE INDEX payments_order_id_idx ON public.payments USING btree (order_id)"
+    },
+    {
+      "table": "payments",
+      "definition": "CREATE UNIQUE INDEX payments_pkey ON public.payments USING btree (id)"
+    },
+    {
+      "table": "product_variants",
+      "definition": "CREATE UNIQUE INDEX product_variants_pkey ON public.product_variants USING btree (id)"
+    },
+    {
+      "table": "product_variants",
+      "definition": "CREATE INDEX product_variants_product_id_idx ON public.product_variants USING btree (product_id)"
+    },
+    {
+      "table": "products",
+      "definition": "CREATE UNIQUE INDEX products_pkey ON public.products USING btree (id)"
+    }
+  ],
+  "row_counts": {
+    "orders": 0,
+    "payments": 0,
+    "products": 0,
+    "customers": 0,
+    "order_items": 0,
+    "product_variants": 0
+  },
+  "constraints": [
+    {
+      "name": "customers_auth_user_id_fkey",
+      "table": "customers",
+      "validated": true,
+      "definition": "FOREIGN KEY (auth_user_id) REFERENCES auth.users(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "customers_auth_user_id_key",
+      "table": "customers",
+      "validated": true,
+      "definition": "UNIQUE (auth_user_id)"
+    },
+    {
+      "name": "customers_pkey",
+      "table": "customers",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "order_items_order_id_fkey",
+      "table": "order_items",
+      "validated": true,
+      "definition": "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "order_items_pkey",
+      "table": "order_items",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "order_items_variant_id_fkey",
+      "table": "order_items",
+      "validated": true,
+      "definition": "FOREIGN KEY (variant_id) REFERENCES product_variants(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "orders_customer_id_fkey",
+      "table": "orders",
+      "validated": true,
+      "definition": "FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "orders_pkey",
+      "table": "orders",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "payments_order_id_fkey",
+      "table": "payments",
+      "validated": true,
+      "definition": "FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "payments_pkey",
+      "table": "payments",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "product_variants_pkey",
+      "table": "product_variants",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "name": "product_variants_product_id_fkey",
+      "table": "product_variants",
+      "validated": true,
+      "definition": "FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE RESTRICT"
+    },
+    {
+      "name": "products_pkey",
+      "table": "products",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    }
+  ],
+  "staff_count": 1,
+  "staff_function_md5": "98aab462066e161b83e4468843e9e2b2"
+}
