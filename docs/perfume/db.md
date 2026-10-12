@@ -1,6 +1,16 @@
 # Perfume POC — DB proposal และจุดเชื่อม
 
-สถานะ: Proposed / review only · 5 ตุลาคม 2026 · ไม่มี migration หรือ remote database write
+สถานะ: Thin Core applied after scrutiny PASS; remaining feature schema Proposed / review only · 11 ตุลาคม 2026
+
+## Core update — 11 ตุลาคม 2026
+
+Core SQL และ [data dictionary](data-dictionary.md) เป็นแหล่งจริงของตาราง/คอลัมน์; [ADR 0004](../adr/0004-core-table-integration.md) ล็อกหกตารางกลาง. `staff_auth` มีอยู่แล้ว; Core รอบนี้เพิ่มเฉพาะ IDs/FKs/created_at โดยไม่สร้างทั้ง 26 ตารางหรือ business columns ด้านล่าง
+
+Core `core_tables` apply สำเร็จบน project `mpzsrprdvvmhormesrva` remote version `20261011075836`; schema/privilege assertions และ denied anonymous HTTP GET ผ่าน. ไม่มี domain/business data writes; [session evidence](../../.docs/SESSIONLOG-core-migration-2026-10-11.md) แยก DB/HTTP/static ออกจาก feature acceptance
+
+ผู้ใช้ยืนยัน member-only purchase, Product มีหลาย Variant, Product/Variant bigint IDs, UUID สำหรับ Core อื่น และลบสมาชิก/สินค้าแล้วไม่ลบ sales history. แนว Guest ใน proposal เดิมถูกแทนที่สำหรับ project scope นี้; Custom/Payment policy ให้ owners ออกแบบร่วมกัน. การคงประวัติใช้ RESTRICT ระยะแรก ไม่ได้ออกแบบ account deletion/anonymization เสร็จแล้ว
+
+ส่วนต่อไปอธิบายข้อเสนอ feature เพื่อคุยกับ owners ไม่ใช่ schema runtime หรือคำสั่งให้เปิดใช้ก่อน access/business contracts พร้อม
 
 ผู้ใช้เลือกใช้คำแนะนำเป็นฐานชั่วคราวเพื่อเห็นภาพรวม ไม่ใช่รับรองสูตร ราคา Provider หรือ schema ใช้งานจริง เอกสารเดิมยังอยู่ครบใน `.docs/perfume/db.md`; ชุดนี้ต่อยอดจากชื่อและความสัมพันธ์เดิม พร้อม DBML สำหรับแชร์ ไม่แก้ archive หรือ implementation
 
@@ -19,24 +29,24 @@
 
 ## ฐานชั่วคราวที่ใช้วาด
 
-| เรื่อง | ใช้ใน diagram | ยังไม่ถือเป็นข้อสรุปของร้าน |
-|---|---|---|
-| ตลาด | ร้านเดียว TH/EN, ราคา THB, ส่งในไทย | Currency/market/shipping/tax ต้องยืนยัน |
-| ลูกค้า | Customer แยกจาก nullable verified Auth link รองรับ Guest+Member | วิธี Login/Guest order access/deduplication |
-| สินค้า | Product → Variants, translations แยก locale | Dimensions, categories, publication rules |
-| Custom | เก็บ options ที่ลูกค้าเลือก ณ สั่งซื้อ; ร้านกำหนด ratio | ราคา ขนาด ข้อจำกัด สูตร วันเกิด และว่าจะเก็บ recipe ไหม |
-| ราคา Custom | รองรับ Order เมื่อมีราคา final ที่ server รับรองแล้ว | ไม่เลือก fixed/component/quote pricing แทนร้าน; quote-first จะเพิ่ม tables |
-| Stock | Manual availability | ไม่มี inventory/reservation โดยปริยาย |
-| เงิน | Integer minor units + currency; Sandbox เท่านั้น | Provider, tax/rounding, refund/state transitions |
-| Promotions | หนึ่งชนิดที่รับรองและหนึ่งรายการต่อ Order ก่อน | ยังไม่เลือกเปอร์เซ็นต์/ลดบาท/ส่งฟรีหรือโควตา |
-| วันเกิด | ไม่เก็บ raw DOB; snapshot เฉพาะผลที่รับรอง | Result structure และ retention |
-| Cart | Client draft; server คิดใหม่เมื่อ checkout | Cross-device cart ไม่รวมในฐาน |
+| เรื่อง      | ใช้ใน diagram                                                    | ยังไม่ถือเป็นข้อสรุปของร้าน                                                |
+| ----------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| ตลาด        | ร้านเดียว TH/EN, ราคา THB, ส่งในไทย                              | Currency/market/shipping/tax ต้องยืนยัน                                    |
+| ลูกค้า      | Core Customer มี required unique Auth link; member-only purchase | Customer linkage/retention/access operations                               |
+| สินค้า      | Product → Variants, translations แยก locale                      | Dimensions, categories, publication rules                                  |
+| Custom      | เก็บ options ที่ลูกค้าเลือก ณ สั่งซื้อ; ร้านกำหนด ratio          | ราคา ขนาด ข้อจำกัด สูตร วันเกิด และว่าจะเก็บ recipe ไหม                    |
+| ราคา Custom | รองรับ Order เมื่อมีราคา final ที่ server รับรองแล้ว             | ไม่เลือก fixed/component/quote pricing แทนร้าน; quote-first จะเพิ่ม tables |
+| Stock       | Manual availability                                              | ไม่มี inventory/reservation โดยปริยาย                                      |
+| เงิน        | Integer minor units + currency; Sandbox เท่านั้น                 | Provider, tax/rounding, refund/state transitions                           |
+| Promotions  | หนึ่งชนิดที่รับรองและหนึ่งรายการต่อ Order ก่อน                   | ยังไม่เลือกเปอร์เซ็นต์/ลดบาท/ส่งฟรีหรือโควตา                               |
+| วันเกิด     | ไม่เก็บ raw DOB; snapshot เฉพาะผลที่รับรอง                       | Result structure และ retention                                             |
+| Cart        | Client draft; server คิดใหม่เมื่อ checkout                       | Cross-device cart ไม่รวมในฐาน                                              |
 
 ## จุดเชื่อมแบบภาพรวม
 
 ```mermaid
 flowchart LR
-  AUTH["Supabase Auth<br/>auth.users"] --> CUSTOMER["customers<br/>Guest / Member"]
+  AUTH["Supabase Auth<br/>auth.users"] --> CUSTOMER["customers<br/>Member"]
   AUTH --> STAFF["private.staff_members<br/>สิทธิ์ Admin"]
   PRODUCT["products<br/>translations / categories / images"] --> VARIANT["product_variants<br/>SKU / ขนาด / ราคา"]
   CUSTOMER --> ORDER["orders<br/>ผู้ซื้อ+ที่อยู่+ยอดเงิน Snapshot"]
@@ -67,24 +77,24 @@ flowchart LR
 
 ## Feature → ตาราง → หน้า → ผู้ดูแล
 
-| Feature | ตารางหลัก | หน้าที่ใช้ | ผู้ดูแลหลัก |
-|---|---|---|---|
-| catalog | products, product_variants, product_translations, categories, category_translations, product_categories, product_images | รายการ/รายละเอียดสินค้า; Admin เพิ่ม/แก้ | สมาชิก 1 |
-| account/customers/access | customers, auth.users reference, private.staff_members | Login/profile เมื่อรับรอง; Admin ลูกค้า; authorization | สมาชิก 3 |
-| custom-perfume | custom_options, custom_option_translations, order_item_custom_options | Custom wizard; Admin custom; summary ใน Order | สมาชิก 3 นิยาม selection; สมาชิก 4 persist กับ Order |
-| checkout/orders | orders, order_items, order_status_history | Checkout, Order detail/tracking, Admin orders | สมาชิก 4 |
-| payments | payments, private.payment_events | Payment result และสถานะธุรกรรม | สมาชิก 4 |
-| promotions | promotions, order_promotions | Admin promotions; server discount ใน Checkout | สมาชิก 1 นิยาม; สมาชิก 4 persist snapshot |
-| content | content_entries | Landing/Contact/Policies; Admin content | สมาชิก 2 |
-| reporting | queries/views อ่าน facts ที่รับรอง | Dashboard/รายงาน | สมาชิก 1 |
-| Conditional | customer_addresses, wishlist_items, private.production_recipes, shipments, private.refunds | Saved address/Wishlist/สูตรผลิต/เลขติดตาม/คืนเงิน | 3 / 2 / 3 / 4 / 4 ตามลำดับ |
+| Feature                  | ตารางหลัก                                                                                                               | หน้าที่ใช้                                             | ผู้ดูแลหลัก                                          |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------- |
+| catalog                  | products, product_variants, product_translations, categories, category_translations, product_categories, product_images | รายการ/รายละเอียดสินค้า; Admin เพิ่ม/แก้               | สมาชิก 1                                             |
+| account/customers/access | customers, auth.users reference, private.staff_members                                                                  | Login/profile เมื่อรับรอง; Admin ลูกค้า; authorization | สมาชิก 3                                             |
+| custom-perfume           | custom_options, custom_option_translations, order_item_custom_options                                                   | Custom wizard; Admin custom; summary ใน Order          | สมาชิก 3 นิยาม selection; สมาชิก 4 persist กับ Order |
+| checkout/orders          | orders, order_items, order_status_history                                                                               | Checkout, Order detail/tracking, Admin orders          | สมาชิก 4                                             |
+| payments                 | payments, private.payment_events                                                                                        | Payment result และสถานะธุรกรรม                         | สมาชิก 4                                             |
+| promotions               | promotions, order_promotions                                                                                            | Admin promotions; server discount ใน Checkout          | สมาชิก 1 นิยาม; สมาชิก 4 persist snapshot            |
+| content                  | content_entries                                                                                                         | Landing/Contact/Policies; Admin content                | สมาชิก 2                                             |
+| reporting                | queries/views อ่าน facts ที่รับรอง                                                                                      | Dashboard/รายงาน                                       | สมาชิก 1                                             |
+| Conditional              | customer_addresses, wishlist_items, private.production_recipes, shipments, private.refunds                              | Saved address/Wishlist/สูตรผลิต/เลขติดตาม/คืนเงิน      | 3 / 2 / 3 / 4 / 4 ตามลำดับ                           |
 
 ตารางเดียวกันใช้ทั้งหน้าร้าน/หลังบ้าน ไม่สร้าง admin_products แยกจาก products และไม่สร้าง table ต่อหน้า เช่น payment result อ่าน payments; Order history อ่าน orders ไม่สร้างประวัติอีกชุด
 
 ## เหตุผลและ boundaries
 
 1. **Product กับ Variant แยกกัน:** ข้อมูลกลิ่นไม่ซ้ำตามขนาด และ Order อ้าง SKU ที่ขายจริง; variants ไม่บังคับทุกมิติที่ร้านยังไม่ยืนยัน
-2. **Customer กับ Auth แยกกัน:** Guest มี customer identity ได้โดยไม่มีบัญชี; contact email ไม่ใช่หลักฐานว่าเป็นเจ้าของ Order และไม่ merge อัตโนมัติ
+2. **Customer กับ Auth แยกกัน:** Core ใช้สมาชิกและ required Auth link; Customer ID เป็นตัวอ้างอิงประวัติของร้าน ส่วน session/verified linkage เป็นสิทธิ์ที่ต้องตรวจ; email ไม่ใช่หลักฐานว่าเป็นเจ้าของ Order
 3. **Order เก็บ snapshot:** เปลี่ยนชื่อสินค้า ราคา ที่อยู่ หรือโปรโมชั่นภายหลังไม่เปลี่ยนสิ่งที่ซื้อไปแล้ว FK ใช้ trace ส่วน snapshot ใช้ประวัติ
 4. **Options ไม่ใช่สูตรผลิต:** ลูกค้าเห็นตัวเลือกที่สั่ง แต่ไม่เห็น ratios/สูตรลับ DBML สูตรผลิตเป็น Conditional private table; ส่วนผสมทางการผลิตอาจเป็นคนละ entity ถ้าร้านต้องการ inventory
 5. **Order ไม่เท่ากับ Payment attempt:** การจ่ายใหม่มี attempts เพิ่มใน Order เดิม เก็บ verified event IDs แยกและคุม transition ให้ fulfill ครั้งเดียว แม้ Provider ส่ง distinct success events หลายครั้ง
@@ -94,7 +104,7 @@ flowchart LR
 
 ## สิ่งที่ diagram ยังไม่ได้รับรอง — ต้องมีใน migration จริง
 
-- **Keys / indexes:** UUID PK, composite PK สำหรับ translations/joins และ index ที่ FK/read paths; การสร้าง timestamps/default UUID/updated_at triggers ต้องเลือกใน migration ไม่อนุมานจาก diagram
+- **Keys / indexes:** Product/Variant bigint identity; Core อื่น UUID; composite keys ของ extension tables ให้ owners review. Core มี FK indexes/created_at defaults แต่ไม่มี updated_at trigger
 - **Validation:** quantity > 0, money >= 0, positive size, allowed locales/status/kinds, end > start, ขอบเขตส่วนลด, nonblank identifiers และ normalized code uniqueness
 - **Cross-row invariants:** Standard item มี Variant; selections อยู่ Custom เท่านั้น; eligibility/ราคา/available ตรวจบน server; totals และ snapshots ตรงกัน; currency ตรงกัน; custom count/compatibility จากร้าน
 - **Transactions:** Order+items+choices+discount+history ต้อง commit พร้อมกัน; checkout idempotency ตรวจ owner และ payload; retry key เดิมไม่สร้าง Order/charge ซ้ำ; Payment state transition ใช้ lock/conditional update
@@ -107,13 +117,13 @@ flowchart LR
 
 RLS เปิดทุกตารางใน exposed schema พร้อม grants ที่ตรง actual access model; RLS ไม่ใช่ column masking และการใส่ตารางใน `private` เพียงชื่ออย่างเดียวไม่กันการเปิด API ต้องตรวจ exposed schema/grants จริง ดู [Supabase RLS](https://supabase.com/docs/guides/database/postgres/row-level-security)
 
-| ข้อมูล | Access ที่เสนอเพื่อ review |
-|---|---|
-| products/options/translations/images/categories/content | Public อ่านเฉพาะ published/enabled records และตรวจ parent publication ของ children; Admin แก้ตาม permission |
-| customers/saved addresses/wishlist | สมาชิกเข้าถึงของตนหลัง verified linkage; Guest ไม่มี public customer/history read; Admin อ่านตามสิทธิ์ |
-| orders/items/choices | Customer-safe projection ตาม ownership หรือ approved scoped guest token; server-only mutations; ห้าม client เปลี่ยนยอด/สถานะ |
-| payment/history | Public-safe status projection ตาม Order access; provider IDs/internal reasons ไม่เปิดจากตารางดิบ |
-| staff_members/payment_events/recipes/refunds | Private unexposed schema + restricted grants/authorized server-only operations; ไม่ใช้ service key ใน browser |
+| ข้อมูล                                                  | Access ที่เสนอเพื่อ review                                                                                                   |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| products/options/translations/images/categories/content | Public อ่านเฉพาะ published/enabled records และตรวจ parent publication ของ children; Admin แก้ตาม permission                  |
+| customers/saved addresses/wishlist                      | สมาชิกเข้าถึงของตนหลัง verified linkage; Guest ไม่มี public customer/history read; Admin อ่านตามสิทธิ์                       |
+| orders/items/choices                                    | Customer-safe projection ตาม ownership หรือ approved scoped guest token; server-only mutations; ห้าม client เปลี่ยนยอด/สถานะ |
+| payment/history                                         | Public-safe status projection ตาม Order access; provider IDs/internal reasons ไม่เปิดจากตารางดิบ                             |
+| staff_members/payment_events/recipes/refunds            | Private unexposed schema + restricted grants/authorized server-only operations; ไม่ใช้ service key ใน browser                |
 
 `auth.users` ใน diagram มีแค่ PK สำหรับ FK ไม่ใช่ schema Supabase Auth ที่เราสร้าง; refer เฉพาะ managed PK และทบทวน deletion/linkage ตาม [Supabase user data](https://supabase.com/docs/guides/auth/managing-user-data)
 
@@ -134,6 +144,6 @@ RLS เปิดทุกตารางใน exposed schema พร้อม gr
 
 แก้ syntax สีวันที่ 5 ตุลาคม 2026: `headercolor: #2563EB` ต้องใช้ color literal ไม่มี quote ตาม [DBML Colors](https://dbml.dbdiagram.io/syntax/enrichment-visualization/#colors) ทั้งชุดละเอียดและชุดย่อผ่าน `@dbml/core@10.2.0` ทั้ง `dbml` และ `dbmlv2` (26 tables ต่อชุด) ด้วย [parser check](../../scripts/dbml.check.cjs) โดยใช้ parser ที่ติดตั้งภายนอกโปรเจกต์ผ่าน NODE_PATH ไม่เพิ่ม dependency ใน package/lockfile
 
-ยังไม่ apply SQL, ทดสอบ RLS/transactions/HTTP/provider หรือเปิดใน dbdiagram editor การผ่าน parser ไม่พิสูจน์ database runtime หรือผลการจัด layout ใน browser
+ข้อความตรวจ parser ข้างบนเป็นหลักฐานรอบ proposal เดิม; รอบ Core วันที่ 11 ตุลาคม 2026 apply เฉพาะหกตารางและตรวจ schema/privileges/denied HTTP แล้ว. ยังไม่ทดสอบ feature transactions/provider/browser หรือ parser ใหม่ การผ่าน parser เดิมไม่พิสูจน์ schema ส่วนขยายหรือ database runtime
 
 Supabase changelog endpoints ดึงไม่สำเร็จในการตรวจครั้งนี้ ใช้เอกสาร RLS/User data ที่เปิดได้สำหรับ proposal; ต้องตรวจ changelog/API ที่เกี่ยวข้องอีกครั้งก่อน implementation

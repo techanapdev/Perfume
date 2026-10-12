@@ -1,4 +1,5 @@
 // Integration outline ONLY: not a complete schema or migration.
+// Core SQL/data-dictionary define actual fields; additional fields remain feature proposals.
 // Visible fields = proposed shared keys, contracts and critical invariants.
 // Other required fields are intentionally left for the table owner to design.
 // Adding internal fields is allowed; changing shared identity/type/cardinality/units/access needs consumer review.
@@ -6,7 +7,7 @@
 // See db-integration-outline.md and db-open-questions.md.
 Project perfume_integration_outline {
   database_type: 'PostgreSQL'
-  Note: 'User agreed to PK/FK plus essential shared fields, with internal columns designed by feature owners. Business choices remain Proposed/Pending. Same 26 tables and 29 references as the full proposal. No migrations, credentials, raw DOB, private ratios or invented provider rules.'
+  Note: 'User agreed to PK/FK plus essential shared fields, with internal columns designed by feature owners. Business choices remain Proposed/Pending. Same 26 tables and 29 references as the full proposal. Thin six-table Core is authorized separately; other columns are not installed. No credentials, raw DOB, private ratios or invented provider rules.'
 }
 
 Table auth.users [headercolor: #64748B] {
@@ -15,8 +16,8 @@ Table auth.users [headercolor: #64748B] {
 }
 Table public.customers [headercolor: #2563EB] {
   id uuid [pk]
-  auth_user_id uuid [unique, ref: - auth.users.id]
-  Note: 'Owner: Member 3. Consumers: 4 orders; 2 wishlist; 1 reporting. Shared: customer ID, nullable verified auth linkage. Owner designs: profile/contact fields and retention. Email is not an identity proof; guest linkage requires verified access.'
+  auth_user_id uuid [not null, unique, ref: - auth.users.id]
+  Note: 'Owner: Member 3. Consumers: 4 orders; 2 wishlist; 1 reporting. Shared: customer ID, required unique Auth link; member-only purchase; initial Core uses RESTRICT. Owner designs: profile/contact fields and retention. Email is not an identity proof; Customer linkage requires verified identity.'
 }
 Table private.staff_members [headercolor: #2563EB] {
   user_id uuid [pk, ref: - auth.users.id]
@@ -25,20 +26,20 @@ Table private.staff_members [headercolor: #2563EB] {
   Note: 'Owner: Member 3. Consumers: all authorized server operations. Shared: trusted role/active check; private unexposed access. Owner designs: provisioning/audit fields. No user-editable role metadata.'
 }
 Table public.products [headercolor: #2563EB] {
-  id uuid [pk]
+  id bigint [pk, increment]
   slug text [not null, unique]
   is_published boolean [not null, default: false]
   Note: 'Owner: Member 1. Consumers: 2 landing/wishlist; 4 checkout via catalog contract. Shared: identity, public URL, publication gate. Owner designs: product details, archive fields and presentation. Referenced purchase history must survive catalog edits.'
 }
 Table public.product_translations [headercolor: #2563EB] {
-  product_id uuid [not null, ref: > public.products.id]
+  product_id bigint [not null, ref: > public.products.id]
   locale text [not null]
   indexes { (product_id, locale) [pk] }
   Note: 'Owner: Member 1. Consumers: localized catalog views. Shared: one row per product+locale. Owner designs: localized name, description and fragrance copy; expose an agreed display result, not direct table coupling.'
 }
 Table public.product_variants [headercolor: #2563EB] {
-  id uuid [pk]
-  product_id uuid [not null, ref: > public.products.id]
+  id bigint [pk, increment]
+  product_id bigint [not null, ref: > public.products.id]
   sku text [not null, unique]
   unit_price_minor bigint [not null, note: 'Nonnegative integer minor units; server-authoritative.']
   currency text [not null, note: 'Provisional THB; same unit/currency contract as orders and payments.']
@@ -60,14 +61,14 @@ Table public.category_translations [headercolor: #2563EB] {
   Note: 'Owner: Member 1. Consumer: localized category displays. Shared: category+locale key. Owner designs: label and description fields.'
 }
 Table public.product_categories [headercolor: #2563EB] {
-  product_id uuid [not null, ref: > public.products.id]
+  product_id bigint [not null, ref: > public.products.id]
   category_id uuid [not null, ref: > public.categories.id]
   indexes { (product_id, category_id) [pk] }
   Note: 'Owner: Member 1. Consumer: catalog filtering and collections. Shared: nonduplicate product-category link. Owner designs: metadata only if needed; restrictions on category membership pending.'
 }
 Table public.product_images [headercolor: #2563EB] {
   id uuid [pk]
-  product_id uuid [not null, ref: > public.products.id]
+  product_id bigint [not null, ref: > public.products.id]
   Note: 'Owner: Member 1. Consumer: 2 through catalog display result. Shared: image-product relationship. Owner designs: Storage path/bucket, alt text, ordering, upload/access limits; no binary files in this table.'
 }
 Table public.custom_options [headercolor: #2563EB] {
@@ -99,7 +100,7 @@ Table public.orders [headercolor: #2563EB] {
 Table public.order_items [headercolor: #2563EB] {
   id uuid [pk]
   order_id uuid [not null, ref: > public.orders.id]
-  variant_id uuid [ref: > public.product_variants.id]
+  variant_id bigint [ref: > public.product_variants.id]
   item_kind text [not null]
   quantity integer [not null, note: 'Positive integer sellable units, not ingredient volume.']
   unit_price_minor bigint [not null]
@@ -187,7 +188,7 @@ Table public.customer_addresses [headercolor: #F59E0B] {
 }
 Table public.wishlist_items [headercolor: #F59E0B] {
   customer_id uuid [not null, ref: > public.customers.id]
-  product_id uuid [not null, ref: > public.products.id]
+  product_id bigint [not null, ref: > public.products.id]
   indexes { (customer_id, product_id) [pk] }
   Note: 'CONDITIONAL. Owner: Member 2. Partners: 3 verified customer; 1 catalog. Shared: one product favorite per customer. Owner designs: timestamps/metadata after scope approval; guest persistence/variant favorites may change identity contract.'
 }

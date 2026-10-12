@@ -1,9 +1,10 @@
-// Review diagram only. NOT a migration. No database has been created or changed.
+// Feature proposal only. NOT the installed schema; Core SQL/data-dictionary are authoritative.
+// Core IDs/auth linkage match ADR 0004; other columns remain Proposed and are not in Core.
 // Blue = proposed foundation; orange = conditional; grey = Supabase-managed reference.
 // See db.md and db-open-questions.md before implementation.
 Project perfume_poc {
   database_type: 'PostgreSQL'
-  Note: 'Single-store POC; TH/EN; sandbox payments. Provisional Guest+Member, THB, domestic shipping, manual availability. No real formula, ratio, provider or lifecycle has been approved. Orange tables are optional, not an implementation checklist.'
+  Note: 'Single-store POC; TH/EN; sandbox payments. Member-only purchase confirmed; THB, domestic shipping and manual availability remain proposals. No real formula, ratio, provider or lifecycle has been approved. Orange tables are optional, not an implementation checklist.'
 }
 
 Table auth.users [headercolor: #64748B] {
@@ -13,13 +14,13 @@ Table auth.users [headercolor: #64748B] {
 
 Table public.customers [headercolor: #2563EB] {
   id uuid [pk]
-  auth_user_id uuid [unique, ref: - auth.users.id]
+  auth_user_id uuid [not null, unique, ref: - auth.users.id]
   display_name text
   email text
   phone text
   created_at timestamptz [not null]
   updated_at timestamptz [not null]
-  Note: 'Member 3. Guest rows have no auth link; link only after identity verification. Email is not unique and is never authorization. No raw birthdate. Deduplication and deletion policy pending.'
+  Note: 'Member 3. Core auth link is required/unique with RESTRICT; member-only purchase. Link only after identity verification. Email is not unique and is never authorization. No raw birthdate. Deduplication and deletion policy pending.'
 }
 
 Table private.staff_members [headercolor: #2563EB] {
@@ -31,7 +32,7 @@ Table private.staff_members [headercolor: #2563EB] {
 }
 
 Table public.products [headercolor: #2563EB] {
-  id uuid [pk]
+  id bigint [pk, increment]
   slug text [not null, unique]
   is_published boolean [not null, default: false]
   archived_at timestamptz
@@ -41,7 +42,7 @@ Table public.products [headercolor: #2563EB] {
 }
 
 Table public.product_translations [headercolor: #2563EB] {
-  product_id uuid [not null, ref: > public.products.id]
+  product_id bigint [not null, ref: > public.products.id]
   locale text [not null]
   name text [not null]
   description text [not null]
@@ -51,8 +52,8 @@ Table public.product_translations [headercolor: #2563EB] {
 }
 
 Table public.product_variants [headercolor: #2563EB] {
-  id uuid [pk]
-  product_id uuid [not null, ref: > public.products.id]
+  id bigint [pk, increment]
+  product_id bigint [not null, ref: > public.products.id]
   sku text [not null, unique]
   size_ml numeric(12,3)
   concentration text
@@ -84,7 +85,7 @@ Table public.category_translations [headercolor: #2563EB] {
 }
 
 Table public.product_categories [headercolor: #2563EB] {
-  product_id uuid [not null, ref: > public.products.id]
+  product_id bigint [not null, ref: > public.products.id]
   category_id uuid [not null, ref: > public.categories.id]
   indexes {
     (product_id, category_id) [pk]
@@ -94,7 +95,7 @@ Table public.product_categories [headercolor: #2563EB] {
 
 Table public.product_images [headercolor: #2563EB] {
   id uuid [pk]
-  product_id uuid [not null, ref: > public.products.id]
+  product_id bigint [not null, ref: > public.products.id]
   bucket_name text [not null]
   object_path text [not null]
   alt_text jsonb [not null, note: 'Validated localized alt-text map, not arbitrary HTML.']
@@ -151,7 +152,7 @@ Table public.orders [headercolor: #2563EB] {
 Table public.order_items [headercolor: #2563EB] {
   id uuid [pk]
   order_id uuid [not null, ref: > public.orders.id]
-  variant_id uuid [ref: > public.product_variants.id]
+  variant_id bigint [ref: > public.product_variants.id]
   item_kind text [not null, note: 'Proposed standard/custom; constraints await approved product model.']
   quantity integer [not null]
   unit_price_minor bigint [not null]
@@ -292,7 +293,7 @@ Table public.customer_addresses [headercolor: #F59E0B] {
 
 Table public.wishlist_items [headercolor: #F59E0B] {
   customer_id uuid [not null, ref: > public.customers.id]
-  product_id uuid [not null, ref: > public.products.id]
+  product_id bigint [not null, ref: > public.products.id]
   created_at timestamptz [not null]
   indexes {
     (customer_id, product_id) [pk]
