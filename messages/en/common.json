@@ -51,7 +51,7 @@
     "errorHelp": "Example error text below an input",
     "skeleton": "Loading example",
     "reference": {
-      "baseline": "Baseline · new theme pending",
+      "baseline": "Gold & Noir · design draft for review",
       "title": "Shared values and code usage",
       "description": "Current implementation reference for developers and AI. The team has not approved a new theme.",
       "valuesNote": "Values below come from browser CSS, without copied color or size values. Refresh after editing CSS.",
@@ -86,7 +86,7 @@
         "title": "UI Kit title on narrow screens",
         "largeTitle": "UI Kit title from the sm breakpoint"
       },
-      "proposedNote": "text-body and text-label are proposed names in the guide, not available classes. Add their CSS mappings and review them before use.",
+      "proposedNote": "This draft implements text-eyebrow, text-heading, text-body, text-label and font-display. Current values await design review.",
       "layoutTitle": "Spacing and radius",
       "layoutNote": "Use the existing Tailwind scale and shared radius. Values are measured from these samples; page layouts still follow their wireframes.",
       "layout": {
@@ -103,7 +103,24 @@
       "guideNote": "Read the short developer/AI guide and the owner checklist linked from this file:"
     }
   },
+  "navigation": {
+    "home": "Home",
+    "collection": "Fragrances",
+    "customize": "Custom perfume",
+    "signIn": "Sign in",
+    "register": "Sign up",
+    "primaryLabel": "Main navigation",
+    "accountLabel": "Account navigation",
+    "description": "Explore fragrances and your personal atelier",
+    "brandLabel": "Perfume — home"
+  },
   "auth": {
+    "backToStore": "Back to the store",
+    "visualTitle": "A scent.\nA story.\nA signature.",
+    "visualDescription": "Discover a fragrance that feels like you, and a story you want to remember.",
+    "accessLabel": "Sign in or create an account",
+    "eyebrow": "YOUR PERSONAL SPACE",
+    "confirmationHelp": "Need help with your confirmation email?",
     "loginTitle": "Sign in",
     "loginDescription": "For customers and staff",
     "email": "Email",

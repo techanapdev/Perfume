@@ -6,10 +6,29 @@ import {StoreShell} from '@/shared/layout/store-shell';
 import {Toaster} from '@/shared/ui/sonner';
 import '../globals.css';
 
-export const metadata: Metadata = {title: {default: 'Perfume — Store preview', template: '%s | Perfume'}, description: 'Perfume commerce POC foundation. Preview only.'};
+export const metadata: Metadata = {
+  title: {default: 'Perfume — The Fragrance Atelier', template: '%s | Perfume'},
+  description:
+    'A world of fragrance, memory and individuality. Explore the Gold & Noir store design preview.'
+};
 
-export default async function LocaleLayout({children, params}: {children: React.ReactNode; params: Promise<{locale: string}>}) {
+export default async function LocaleLayout({
+  children,
+  params
+}: {
+  children: React.ReactNode;
+  params: Promise<{locale: string}>;
+}) {
   const {locale} = await params;
   if (!isAppLocale(locale)) notFound();
-  return <html lang={locale}><body><NextIntlClientProvider><StoreShell>{children}</StoreShell><Toaster /></NextIntlClientProvider></body></html>;
+  return (
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider>
+          <StoreShell>{children}</StoreShell>
+          <Toaster />
+        </NextIntlClientProvider>
+      </body>
+    </html>
+  );
 }

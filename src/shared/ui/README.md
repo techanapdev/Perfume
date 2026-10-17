@@ -1,6 +1,6 @@
 # Shared UI baseline
 
-Coordinator: Member 2. These are editable shadcn-style new-york neutral primitives using the individually pinned Radix packages.
+Coordinator: Member 2. These are editable shadcn-style primitives using the individually pinned Radix packages. The current Gold & Noir design study was requested on 17 October 2026 and awaits visual acceptance.
 The shadcn 4.21.1 CLI registry currently emits cn/radix-ui umbrella imports; the foundation adapts imports to the existing cn utility and scoped Radix dependencies. No additional theme provider is required.
 
 - Import specific files. No barrel mixing client and server exports.
@@ -15,18 +15,22 @@ See [UI workflow](../../../docs/perfume/ui-workflow.md) and [architecture](../..
 
 ## Theme reference for developers and AI
 
-Status: **baseline, new theme pending**. Inspect `/th/ui-kit` or `/en/ui-kit` for color swatches, typography, spacing/radius and component usage. `ui-kit-foundations.tsx` reads values from browser CSS; use **Refresh CSS values** after editing styles. JavaScript is required for the measured values. These samples document the current foundation, not approved branding.
+Status: **Gold & Noir design draft, review pending**. Inspect `/th/ui-kit` or `/en/ui-kit` for color swatches, typography, spacing/radius and component usage. `ui-kit-foundations.tsx` reads values from browser CSS; use **Refresh CSS values** after editing styles. JavaScript is required for the measured values. The dark foundation and gold primary also apply to account and admin surfaces. These samples document the current implementation, not approved branding.
 
-| Need           | Source of truth                                                    | Usage                                                                                                                     |
-| -------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------- |
-| Colors         | `src/app/globals.css`: `:root` values and `@theme inline` mappings | `bg-background text-foreground`, `bg-primary text-primary-foreground`, `text-muted-foreground`, `border-border`           |
-| Font family    | `body` in `globals.css`                                            | Inherit the stack; listing a font does not load it or prove which font renders each glyph                                 |
-| Typography     | Tailwind utilities used in the actual components                   | Button: `text-sm font-medium`; Input: `text-base`; CardTitle: `text-xl font-medium`; UI Kit title: `text-3xl sm:text-4xl` |
-| Spacing/radius | Tailwind scale and `--radius` mappings in `globals.css`            | Button: `gap-2 rounded-md`; CardHeader: `p-6`; Card: `rounded-lg`                                                         |
-| Component API  | Specific files in this directory                                   | Import `Button` from `@/shared/ui/button`, not a feature-local copy                                                       |
-| Visible copy   | `messages/th/common.json` and `messages/en/common.json`            | Keep both locales in sync; reference samples use `common.kit.reference`                                                   |
+| Need           | Source of truth                                                    | Usage                                                                                                           |
+| -------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Colors         | `src/app/globals.css`: `:root` values and `@theme inline` mappings | `bg-background text-foreground`, `bg-primary text-primary-foreground`, `text-muted-foreground`, `border-border` |
+| Font family    | `body` in `globals.css`                                            | Inherit the stack; listing a font does not load it or prove which font renders each glyph                       |
+| Typography     | Semantic utilities and actual components                           | Button: `text-label`; Input: `text-base`; CardTitle: `text-xl font-medium`; UI Kit title: `text-heading`        |
+| Spacing/radius | Tailwind scale and `--radius` mappings in `globals.css`            | Button: `gap-3 rounded-sm`; CardHeader: `p-6`; Card: `rounded-lg`                                               |
+| Component API  | Specific files in this directory                                   | Import `Button` from `@/shared/ui/button`, not a feature-local copy                                             |
+| Visible copy   | `messages/th/common.json` and `messages/en/common.json`            | Keep both locales in sync; reference samples use `common.kit.reference`                                         |
 
-Values belong in CSS. Do not duplicate hex values, font sizes or font stacks in this guide. Typography roles in the new theme remain pending: `text-body` and `text-label` are **not implemented**. Use existing utilities until a reviewed CSS mapping exists.
+Values belong in CSS. Do not duplicate hex values, font sizes or font stacks in this guide. The current draft implements `text-eyebrow`, `text-heading`, `text-body`, `text-label`, `font-display` and `max-w-site` in `globals.css`. The UI Kit heading/body and live primitive samples demonstrate these roles. Display fonts use a local system fallback stack without a remote font request.
+
+The existing Button, Badge, Card, Input, Dialog and Toaster APIs are preserved. Button dimensions, colors and typography follow the new draft; verify consumers visually before accepting the theme. Use `bg-overlay` for dark backdrops: `foreground` is now light text and must not be used as a dark overlay.
+
+Use `site-container` for centered store sections and the UI Kit. It provides a shared maximum width, automatic inline margins and responsive gutters from `--site-width` and `--site-gutter`. Do not add another set of horizontal padding utilities to the same element. Full-bleed backgrounds belong on the outer section.
 
 ```tsx
 import {Button} from '@/shared/ui/button';
@@ -44,7 +48,7 @@ Owner preparation and review checkpoints: [Design system checklist](../../../doc
 
 ## Building pages while the theme is in progress
 
-The badge at the top of `/th/ui-kit` is the theme status. `Baseline` means not ready; `Draft 1` means names are stable and pages can be built in parallel, while values may still change.
+The badge at the top of `/th/ui-kit` is the theme status. The Gold & Noir draft is available for review; visual acceptance and approval of branding remain pending.
 
 1. Use only classes and components shown in the UI Kit.
 2. No raw values: no hex colors or arbitrary sizes such as `text-[15px]`. Use token classes and typography roles.
