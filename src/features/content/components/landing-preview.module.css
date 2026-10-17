@@ -1,0 +1,107 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  min-height: clamp(36rem, 65vw, 46rem);
+  align-items: center;
+  overflow: hidden;
+  background: var(--background);
+}
+
+.heroImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  max-width: 100rem;
+  margin-inline: auto;
+}
+
+.heroImage img {
+  object-position: 65% center;
+}
+
+.heroShade {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      0deg,
+      var(--background),
+      transparent 22%,
+      transparent 78%,
+      color-mix(in srgb, var(--background) 55%, transparent)
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--background) 85%, transparent),
+      color-mix(in srgb, var(--background) 80%, transparent) 50%,
+      color-mix(in srgb, var(--background) 55%, transparent)
+    );
+}
+
+.heroCopy {
+  width: 100%;
+  max-width: 52rem;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.heroTitle {
+  font-family: var(--font-editorial);
+  font-size: clamp(2.75rem, 8.5vw, 7rem);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -0.055em;
+  overflow-wrap: anywhere;
+}
+
+.heroTitle span,
+.heroTitle em {
+  display: block;
+}
+
+.heroTitle em {
+  margin-top: 0.08em;
+  color: var(--primary);
+}
+
+.edition {
+  position: absolute;
+  right: 1.5rem;
+  top: 2rem;
+  color: var(--foreground);
+  opacity: 0.6;
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  writing-mode: vertical-rl;
+}
+
+.atelierVisual {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  min-height: clamp(22rem, 42vw, 34rem);
+  max-width: 38rem;
+  margin-inline: auto;
+  overflow: hidden;
+}
+
+@media (max-width: 767px) {
+  .hero {
+    min-height: auto;
+  }
+
+  .heroShade {
+    background:
+      linear-gradient(0deg, var(--background), transparent 40%),
+      color-mix(in srgb, var(--background) 75%, transparent);
+  }
+
+  .edition {
+    display: none;
+  }
+
+  .atelierVisual {
+    min-height: clamp(20rem, 80vw, 28rem);
+  }
+}

@@ -1,17 +1,100 @@
 {
-  "eyebrow": "Discover yourself",
-  "title": "A fragrance.\nUniquely yours.",
-  "subtitle": "Every scent holds a story. Let yours begin here.",
-  "explore": "Explore the collection",
-  "collectionLabel": "The world of fragrance",
-  "collectionTitle": "Small details.\nLasting memories.",
-  "collectionDescription": "The brightness of citrus, the softness of florals, the warmth of woods. Explore stories through the scents you love.",
+  "eyebrow": "THE GOLDEN EDIT / UNIQUELY YOU",
+  "title": "Leave an",
+  "titleAccent": "impression.",
+  "subtitle": "Some memories begin before a word is spoken. Discover a fragrance that makes your presence unforgettable.",
+  "explore": "Discover the collection",
+  "meetAtelier": "The personal atelier",
+  "scroll": "Scroll to discover",
+  "heroImageAlt": "Concept photograph of an amber perfume bottle on black stone in dramatic golden light",
+  "collectionLabel": "THE SCENT COLLECTION",
+  "collectionTitle": "A world of character.",
+  "collectionDescription": "From the brightness of first light to the quiet depth of evening. Explore three moods of fragrance, and find a story that feels like you.",
   "customLabel": "Your personal fragrance",
-  "customTitle": "Begin with you",
-  "customDescription": "A personal fragrance concept starts with your birthdate and favorite scents. Recommendations and options await the shop’s approval.",
-  "placeholder": "Placeholder illustration",
-  "note": "Store preview · orders are not available yet",
+  "customTitle": "Your story.\nTold in scent.",
+  "customDescription": "Some scents take us back. Others express who we are without a single word. Let your memories and the things you love inspire a fragrance concept of your own.",
+  "customExplore": "Explore the personal concept",
+  "customDialogTitle": "Something personal begins here.",
+  "customDialogDescription": "This concept starts with your birthdate and favorite scents. Recommendations, options and details await the shop’s approval. This is a design preview; custom blending and ordering are not available yet.",
+  "placeholder": "Imagery and scent moods are design concepts, not approved products or fragrance formulas.",
+  "note": "Store design preview · orders are not available yet",
   "familyOne": "Fresh",
   "familyTwo": "Soft",
-  "familyThree": "Warm"
+  "familyThree": "Warm",
+  "closing": "Some things stay.\nEven after you leave.",
+  "customize": {
+    "back": "Back to the store",
+    "title": "A fragrance, uniquely you.",
+    "description": "Choose up to three sample bases and watch your fragrance slowly fill the bottle. A preview space to explore the beginnings of your own signature scent.",
+    "workbench": "Your fragrance workbench",
+    "explore": "Explore the collection"
+  },
+  "atelier": {
+    "memory": "The memories you want to keep",
+    "character": "The character that comes naturally",
+    "signature": "The impression you leave behind"
+  },
+  "families": {
+    "citrus": {
+      "title": "A brighter beginning",
+      "description": "Light, vibrant and full of possibility. A mood inspired by the first touch of morning sun.",
+      "mood": "BRIGHT · FRESH · SPIRITED",
+      "imageAlt": "Concept photograph of a pale golden perfume bottle with citrus fruit and a green leaf on dark stone"
+    },
+    "floral": {
+      "title": "Quietly captivating",
+      "description": "Soft, expressive and effortlessly romantic. The intimate feeling of a flower slowly unfolding.",
+      "mood": "SOFT · ELEGANT · ROMANTIC",
+      "imageAlt": "Concept photograph of a perfume bottle beside an ivory rose and petals in soft light"
+    },
+    "woody": {
+      "title": "After the golden hour",
+      "description": "Warm, grounded and a little mysterious. A mood that lingers like the memory of a beautiful evening.",
+      "mood": "WARM · DEEP · INTRIGUING",
+      "imageAlt": "Concept photograph of an amber perfume bottle on dark cedar wood in golden light and soft smoke"
+    }
+  },
+  "ingredients": {
+    "preview": "INTERACTIVE PREVIEW",
+    "title": "Every note, a little more you.",
+    "description": "Choose up to three sample scent bases and watch your imagined fragrance story come together, one drop at a time.",
+    "choose": "Choose your sample bases",
+    "count": "{count} / {max} bases selected",
+    "help": "Add a base, or select it again to remove it.",
+    "limit": "Three bases selected. Remove one to explore another scent.",
+    "reset": "Clear and try again",
+    "selected": "Your selected bases",
+    "slot": "Base {number}",
+    "remove": "Remove {name}",
+    "empty": "Your story begins with the first base.",
+    "building": "Your story is taking shape · {count} selected.",
+    "ready": "Three bases selected · your imagined scent story is complete.",
+    "disclaimer": "Selection and animation preview only. All bases are illustrative. The bottle does not represent a real formula or mixing ratio. Ordering is not available.",
+    "choices": {
+      "bergamot": {
+        "name": "Bergamot",
+        "mood": "Bright and spirited"
+      },
+      "rose": {
+        "name": "Rose",
+        "mood": "Soft and romantic"
+      },
+      "jasmine": {
+        "name": "Jasmine",
+        "mood": "Gentle and serene"
+      },
+      "cedar": {
+        "name": "Cedar",
+        "mood": "Warm and grounded"
+      },
+      "vanilla": {
+        "name": "Vanilla",
+        "mood": "Soft and dreamy"
+      },
+      "amber": {
+        "name": "Amber",
+        "mood": "Deep and intriguing"
+      }
+    }
+  }
 }

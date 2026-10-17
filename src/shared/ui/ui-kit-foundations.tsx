@@ -86,7 +86,7 @@ const LAYOUT_SAMPLES = [
   {classes: 'gap-2', property: 'column-gap', role: 'iconGap'},
   {classes: 'gap-4', property: 'column-gap', role: 'fieldGap'},
   {classes: 'p-6', property: 'padding-top', role: 'cardPadding'},
-  {classes: 'rounded-md', property: 'border-radius', role: 'controlRadius'},
+  {classes: 'rounded-sm', property: 'border-radius', role: 'controlRadius'},
   {classes: 'rounded-lg', property: 'border-radius', role: 'cardRadius'}
 ];
 

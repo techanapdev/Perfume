@@ -51,7 +51,7 @@
     "errorHelp": "ตัวอย่างข้อความผิดพลาดใต้ช่องกรอก",
     "skeleton": "ตัวอย่างระหว่างโหลด",
     "reference": {
-      "baseline": "Baseline · รอออกแบบ theme ใหม่",
+      "baseline": "Gold & Noir · แบบร่างเพื่อรีวิว",
       "title": "ค่ากลางและวิธีใช้ในโค้ด",
       "description": "อ้างอิงค่าที่ใช้จริงตอนนี้สำหรับ dev และ AI ยังไม่ใช่ theme ใหม่ที่ทีมรับรอง",
       "valuesNote": "ค่าด้านล่างอ่านจาก CSS ใน browser ไม่ได้คัดลอกรหัสสีหรือขนาดมาเก็บซ้ำ กดอ่านค่าใหม่หลังแก้ CSS",
@@ -86,7 +86,7 @@
         "title": "หัวข้อ UI Kit บนจอแคบ",
         "largeTitle": "หัวข้อ UI Kit ตั้งแต่ breakpoint sm"
       },
-      "proposedNote": "text-body และ text-label ยังเป็นชื่อที่เสนอในคู่มือ ไม่ใช่ class ที่พร้อมใช้ ต้องเพิ่ม CSS mapping และผ่านรีวิวก่อน",
+      "proposedNote": "แบบร่างนี้รองรับ text-eyebrow, text-heading, text-body, text-label และ font-display แล้ว ค่าปัจจุบันยังรอการรีวิวดีไซน์",
       "layoutTitle": "Spacing และ radius",
       "layoutNote": "ใช้ Tailwind scale และ radius กลางที่มีอยู่ ค่าที่เห็นวัดจากตัวอย่างจริง กติกาการจัดแต่ละหน้ายังขึ้นกับ wireframe",
       "layout": {
@@ -103,7 +103,24 @@
       "guideNote": "อ่านคู่มือสั้นสำหรับ dev/AI และลิงก์ checklist ของผู้รับผิดชอบในไฟล์นี้:"
     }
   },
+  "navigation": {
+    "home": "หน้าหลัก",
+    "collection": "คอลเลกชัน",
+    "customize": "ออกแบบกลิ่น",
+    "signIn": "เข้าสู่ระบบ",
+    "register": "สมัครสมาชิก",
+    "primaryLabel": "เมนูหลัก",
+    "accountLabel": "บัญชีผู้ใช้",
+    "description": "สำรวจกลิ่นหอมและพื้นที่ออกแบบกลิ่นของคุณ",
+    "brandLabel": "Perfume — หน้าหลัก"
+  },
   "auth": {
+    "backToStore": "กลับหน้าร้าน",
+    "visualTitle": "โลกของกลิ่นหอม\nเริ่มต้นที่คุณ",
+    "visualDescription": "ค้นพบกลิ่นที่สะท้อนตัวตน และเรื่องราวที่คุณอยากจดจำ",
+    "accessLabel": "เข้าสู่ระบบหรือสมัครสมาชิก",
+    "eyebrow": "พื้นที่ของคุณ",
+    "confirmationHelp": "ต้องการความช่วยเหลือเรื่องอีเมลยืนยัน?",
     "loginTitle": "เข้าสู่ระบบ",
     "loginDescription": "สำหรับลูกค้าและทีมงาน",
     "email": "อีเมล",

@@ -17,6 +17,14 @@ Create files when work is approved:
 
 Integration: Supabase auth → server authorization; own orders view → orders.
 
+## Storefront UI handoff
+
+Login and registration now compose `LoginScreen` / `RegisterScreen` with the shared feature-level `AuthPageShell`. The locale layout supplies the storefront navbar/footer; do not mount another StoreShell in these routes. Responsive presentation and copy use existing semantic tokens and `common.auth` translations.
+
+Existing form components, actions, validation, session authorization and safe redirect logic are unchanged. These forms still invoke real Auth actions when submitted; they are not local demo forms. The UI session did not submit credentials, send confirmation email or verify a live session. Navbar account links currently do not reflect session state. No new access policy is implied.
+
+Read the [Thai storefront UI handoff guide](../../../docs/perfume/design-system/storefront-ui-handoff.md) for source locations, component contracts, next decisions and manual acceptance checks.
+
 Pending client requirements: Guest/member scope (Q-A01/Q-A02/Q-A05) and staff roles (Q-B01).
 
 Read [architecture](../../../docs/perfume/architecture.md), [contracts](../../../docs/perfume/feature-contracts.md), [DB](../../../docs/perfume/db.md), and [requirements](../../../docs/perfume/requirements-open-questions.md). Store/admin use the same domain rules. No empty implementation stubs or mixed server/client barrels.

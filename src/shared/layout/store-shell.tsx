@@ -1,23 +1,56 @@
+import {MoveUpRight} from 'lucide-react';
 import {getTranslations} from 'next-intl/server';
 import {Link} from '@/i18n/navigation';
-import {StoreMenu} from './store-menu';
-import {LanguageSwitcher} from './language-switcher';
+import {StoreHeader} from './store-header';
 
 export async function StoreShell({children}: {children: React.ReactNode}) {
   const t = await getTranslations('common');
-  return <>
-    <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-background focus:p-4">{t('skip')}</a>
-    <header className="grid min-h-24 grid-cols-[1fr_auto_1fr] items-center border-b px-4 md:px-10">
-      <StoreMenu labels={{menu: t('menu'), close: t('close'), description: t('menuDescription'), home: t('home'), uiKit: t('uiKit'), catalog: t('catalog'), custom: t('custom'), notReady: t('notReady')}} />
-      <Link href="/" className="text-2xl font-medium tracking-[0.14em] uppercase sm:text-3xl">Perfume</Link>
-      <div className="justify-self-end"><LanguageSwitcher /></div>
-    </header>
-    <main id="main-content">{children}</main>
-    <footer className="mt-16 flex flex-col items-center gap-6 border-t px-6 py-14 text-center">
-      <p className="text-xl tracking-[0.14em] uppercase">Perfume</p>
-      <p className="text-sm text-muted-foreground">{t('footer')}</p>
-      <Link href="/ui-kit" className="text-xs underline underline-offset-4">{t('uiKit')}</Link>
-      <p className="text-xs text-muted-foreground">{t('baseline')}</p>
+
+  return (
+    <>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:z-50 focus:bg-primary focus:p-4 focus:text-primary-foreground"
+      >
+        {t('skip')}
+      </a>
+      <StoreHeader />
+      <main id="main-content">{children}</main>
+      <StoreFooter />
+    </>
+  );
+}
+
+async function StoreFooter() {
+  const t = await getTranslations('common');
+
+  return (
+    <footer className="border-t pt-14 pb-8">
+      <div className="site-container text-center">
+        <div className="flex flex-col items-center justify-center gap-6">
+          <div className="space-y-3">
+            <p className="text-eyebrow text-primary">A SCENT. A STORY. A SIGNATURE.</p>
+            <p className="text-body text-muted-foreground">{t('footer')}</p>
+          </div>
+          <Link
+            href="/ui-kit"
+            className="flex w-fit items-center gap-3 border-b border-primary/50 pb-2 text-label text-primary transition-colors hover:text-foreground"
+          >
+            {t('uiKit')}
+            <MoveUpRight className="size-4" aria-hidden="true" />
+          </Link>
+        </div>
+        <p
+          aria-hidden="true"
+          className="my-10 border-b pb-8 text-center font-display text-heading tracking-widest text-primary/65 sm:text-8xl lg:text-9xl"
+        >
+          PERFUME.
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-3 text-xs leading-6 text-muted-foreground">
+          <p>PERFUME · THE FRAGRANCE ATELIER</p>
+          <p>{t('baseline')}</p>
+        </div>
+      </div>
     </footer>
-  </>;
+  );
 }

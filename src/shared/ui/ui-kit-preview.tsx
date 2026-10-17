@@ -22,13 +22,11 @@ import {DemoSection} from './ui-kit-demo-section';
 import {FieldsSection} from './ui-kit-fields';
 import {UiKitFoundations} from './ui-kit-foundations';
 
-// Server Component: only ButtonsSection, FieldsSection and UiKitFoundations are client leaves.
-// Every src/shared/ui component needs a demo here (enforced by pnpm check:foundation).
-// Theme baseline and usage rules: src/shared/ui/README.md.
-// Owner checklist (steps 1-17, Draft 1 at step 12): docs/perfume/design-system/design-system-onboarding.md.
+// Keep shared primitive demos here; pnpm check:foundation enforces coverage.
+// Theme usage and review status: src/shared/ui/README.md.
 export function UiKitPreview() {
   return (
-    <div className="mx-auto max-w-6xl space-y-12 px-6 py-16">
+    <div className="site-container space-y-12 py-16">
       <PageHeader />
       <UiKitFoundations />
       <Separator />
@@ -61,9 +59,10 @@ async function PageHeader() {
 
   return (
     <header className="space-y-4">
-      <h1 className="text-3xl sm:text-4xl">{t('title')}</h1>
+      <p className="text-eyebrow text-primary">DESIGN STUDY 01 / GOLD &amp; NOIR</p>
+      <h1 className="text-heading">{t('title')}</h1>
       <Badge>{t('reference.baseline')}</Badge>
-      <p className="text-sm text-muted-foreground">{t('description')}</p>
+      <p className="text-body text-muted-foreground">{t('description')}</p>
       <nav aria-label={t('navLabel')}>
         <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           {SECTIONS.map((id) => (
